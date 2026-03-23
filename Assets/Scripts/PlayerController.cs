@@ -1,9 +1,9 @@
-using Mono.Cecil.Cil;
+using Mirror;
+using Mirror.Examples.Basic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.iOS;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     private float speed = 10f;
     private float jumpForce = 3f;
@@ -13,70 +13,94 @@ public class PlayerController : MonoBehaviour
     private Vector2 lookInput = Vector2.zero;
     private Rigidbody rb;
     private PlayerInput playerInput;
-    private string playerDevice;
-    private Plane plane;
+    private string currentPlayerDevice;
+    Vector3 lookDirection = Vector3.zero;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
-        playerDevice = playerInput.currentControlScheme;
-        Debug.Log($"Using: {playerDevice}");
+        currentPlayerDevice = playerInput.currentControlScheme;
+        Debug.Log($"Using: {currentPlayerDevice}");
     }
 
     private void Start()
     {
-        if(playerDevice == "Keyboard&Mouse")
+        if(!isLocalPlayer && NetworkClient.active)
         {
-            plane = new Plane(Vector3.up, Vector3.zero);
+            playerInput.enabled = false;   
         }
     }
 
     private void Update()
-    {   
-        Vector3 move = new Vector3(moveInput.x, 0f ,moveInput.y) * speed * Time.deltaTime;
-        transform.Translate(move, Space.World);
+    {
+        if (isLocalPlayer && NetworkClient.active)
+        {
+            IDK();
+            PlayerMovement(moveInput, lookDirection, currentPlayerDevice); 
+        }
+        else
+        {
+            IDK();
+            PlayerMovement(moveInput, lookDirection, currentPlayerDevice); 
+        }
+    }
+
+    private void IDK()
+    {
+        currentPlayerDevice = playerInput.currentControlScheme;
+            
+        lookDirection = Vector3.zero;
+        if (currentPlayerDevice == "Keyboard&Mouse")
+        {
+            lookDirection = CalculateMouseLook();
+        }
+        else if(currentPlayerDevice == "Gamepad")
+        {
+            lookDirection = new Vector3(lookInput.x , 0 ,0);
+        }   
+    }
+
+    private void PlayerMovement(Vector2 input, Vector3 lookDirection, string playerDevice)
+    {
+        Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
+        rb.linearVelocity = moveDir * speed;
+
+        Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
 
         if (playerDevice == "Gamepad")
         {
-            yRotation += lookInput.x;
+            yRotation += lookDirection.x;
             transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
         }
-        else if(playerDevice == "Keyboard&Mouse")
+        else if (playerDevice == "Keyboard&Mouse" && lookDirection != Vector3.zero)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-            if(plane.Raycast(ray, out float distance))
-            {
-                Vector3 point = ray.GetPoint(distance);
-
-                point.y = transform.position.y;
-
-                transform.LookAt(point);
-            }
+            lookDirection.y = transform.position.y;
+            transform.LookAt(lookDirection);
         }
-   }
+    }
 
-    // private void FixedUpdate()
-    // {
-
-    // }
+    private Vector3 CalculateMouseLook()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Plane plane = new Plane(Vector3.up, transform.position);
+        if (plane.Raycast(ray, out float distance))
+        {
+            return ray.GetPoint(distance);
+        }
+        return Vector3.zero;
+    }
 
     public void OnMove(InputAction.CallbackContext callbackContext)
     {
         moveInput = callbackContext.ReadValue<Vector2>();
     }
 
-    public void OnJump(InputAction.CallbackContext callbackContext)
-    {
-        // rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-    }
-
     public void OnLook(InputAction.CallbackContext callbackContext)
     {
         Vector2 rawInput = callbackContext.ReadValue<Vector2>();
 
-        if (playerDevice == "Gamepad")
+        if (currentPlayerDevice == "Gamepad")
         {
             lookInput = new Vector2(rawInput.x * Time.deltaTime * gamepadSensitivityX, 0);
         }
