@@ -122,7 +122,7 @@ public class PlayerController : NetworkBehaviour
         if (playerDevice == "Gamepad")
         {
             // 只有當玩家有推搖桿時才旋轉，否則放開搖桿角色會瞬間轉回預設方向
-            if (input.sqrMagnitude > 0.01f) 
+            if (input.sqrMagnitude > 0.02f) 
             {
                 Vector3 targetDirection = new Vector3(input.x, 0f, input.y);
                 // 使用 Quaternion.LookRotation 算出該方向的旋轉值
