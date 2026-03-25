@@ -1,20 +1,36 @@
 using Mirror;
 using Mirror.Examples.Basic;
+using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
-    private float speed = 10f;
-    private float jumpForce = 3f;
+    [Header("Player Status")]
+    [SerializeField] private float speed = 10f;
+    // private float jumpForce = 3f;
     private Vector2 moveInput = Vector2.zero;
-    private float gamepadSensitivityX = 500f;
-    private float yRotation = 0f;
-    private Vector2 lookInput = Vector2.zero;
     private Rigidbody rb;
     private PlayerInput playerInput;
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
+
+    [Space(10)]
+    [Header("Skill01")]
+    [SerializeField] private bool isSkill01;
+    [SerializeField] private bool canSkill01;
+    [SerializeField] private float skill01MaxTime;
+    [SerializeField] private float skill01Speed;
+    [SerializeField] private float skill01CDMaxTime;
+    private float skill01CDTimer;
+    private float skill01Timer;
+
+    [Space(10)]
+    [Header("Skill02")]
+    [SerializeField] private bool isSkill02;
+    [SerializeField] private bool canSkill02;
+    [SerializeField] private float skill02CDMaxTime;
+    private float skill02CDTimer;
 
     private void Awake()
     {
@@ -26,9 +42,15 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
+        skill01Timer = skill01MaxTime;
+        isSkill01 = false;
+        isSkill02 = false;
+        canSkill01 = true;
+        canSkill02 = true;
+
         if(!isLocalPlayer && NetworkClient.active)
         {
-            playerInput.enabled = false;   
+            playerInput.enabled = false;
         }
     }
 
@@ -36,17 +58,15 @@ public class PlayerController : NetworkBehaviour
     {
         if (isLocalPlayer && NetworkClient.active)
         {
-            IDK();
-            PlayerMovement(moveInput, lookDirection, currentPlayerDevice); 
+            PlayerMovement();
         }
         else
         {
-            IDK();
-            PlayerMovement(moveInput, lookDirection, currentPlayerDevice); 
+            PlayerMovement();
         }
     }
 
-    private void IDK()
+    private void PlayerMovement()
     {
         currentPlayerDevice = playerInput.currentControlScheme;
             
@@ -55,29 +75,73 @@ public class PlayerController : NetworkBehaviour
         {
             lookDirection = CalculateMouseLook();
         }
-        else if(currentPlayerDevice == "Gamepad")
+
+        if(!isSkill01 && !isSkill02)
         {
-            lookDirection = new Vector3(lookInput.x , 0 ,0);
-        }   
+            PlayerMove(moveInput, lookDirection, currentPlayerDevice);
+        }
+        else if(isSkill01)
+        {
+            Skill01();
+        }
+        else if(isSkill02)
+        {
+            Skill02(); 
+        }
+
+        //Skill CD
+        if (!canSkill01 && !isSkill01)
+        {
+            if(skill01CDTimer < 0)
+            {
+                canSkill01 = true;   
+            }
+            else
+            {
+                skill01CDTimer -= Time.deltaTime;   
+            }
+        }
+        if (!canSkill02 && !isSkill02)
+        {
+            if(skill02CDTimer < 0)
+            {
+                canSkill02 = true;   
+            }
+            else
+            {
+                skill02CDTimer -= Time.deltaTime;   
+            }
+        }
     }
 
-    private void PlayerMovement(Vector2 input, Vector3 lookDirection, string playerDevice)
+    private void PlayerMove(Vector2 input, Vector3 lookDirection, string playerDevice)
     {
-        Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
-        rb.linearVelocity = moveDir * speed;
-
-        Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
-
         if (playerDevice == "Gamepad")
         {
-            yRotation += lookDirection.x;
-            transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+            // 只有當玩家有推搖桿時才旋轉，否則放開搖桿角色會瞬間轉回預設方向
+            if (input.sqrMagnitude > 0.01f) 
+            {
+                Vector3 targetDirection = new Vector3(input.x, 0f, input.y);
+                // 使用 Quaternion.LookRotation 算出該方向的旋轉值
+                Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+                
+                // 如果想要「瞬間」轉向：
+                transform.rotation = targetRotation;
+
+                // 如果想要「平滑」轉向（手感更好）：
+                // transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 15f);
+            }
         }
         else if (playerDevice == "Keyboard&Mouse" && lookDirection != Vector3.zero)
         {
             lookDirection.y = transform.position.y;
             transform.LookAt(lookDirection);
         }
+
+        Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
+        rb.linearVelocity = moveDir * speed;
+
+        // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
     }
 
     private Vector3 CalculateMouseLook()
@@ -91,18 +155,53 @@ public class PlayerController : NetworkBehaviour
         return Vector3.zero;
     }
 
+    #region Skill
+    private void Skill01()
+    {
+        if(skill01Timer > 0)
+        {
+            rb.linearVelocity = transform.forward * skill01Speed;
+            skill01Timer -= Time.deltaTime;
+            Debug.Log("OMG is Skill01 :O");
+        }
+        else
+        {
+            isSkill01 = false;
+            skill01CDTimer = skill01CDMaxTime;
+            skill01Timer = skill01MaxTime;
+        }
+    }
+
+    private void Skill02()
+    {
+        Debug.Log("OMG is Skill02 :O");
+        isSkill02 = false;
+        skill02CDTimer = skill02CDMaxTime;
+    }
+    #endregion
+
+    #region Input Control
     public void OnMove(InputAction.CallbackContext callbackContext)
     {
         moveInput = callbackContext.ReadValue<Vector2>();
     }
 
-    public void OnLook(InputAction.CallbackContext callbackContext)
+    public void OnSkill01(InputAction.CallbackContext callbackContext)
     {
-        Vector2 rawInput = callbackContext.ReadValue<Vector2>();
-
-        if (currentPlayerDevice == "Gamepad")
+        if (canSkill01 && !isSkill01 && !isSkill02)
         {
-            lookInput = new Vector2(rawInput.x * Time.deltaTime * gamepadSensitivityX, 0);
-        }
+            isSkill01 = true;
+            canSkill01 = false;
+        }   
     }
+
+    public void OnSkill02(InputAction.CallbackContext callbackContext)
+    {
+        if (canSkill02 && !isSkill01 && !isSkill02)
+        {
+            isSkill02 = true;
+            canSkill02 = false;
+        }   
+    }
+    #endregion
 }
