@@ -11,7 +11,6 @@ public class ShowHitbox : MonoBehaviour
     private Vector3[] vertices = new Vector3[8];
 
     [Header("Debug Settings")]
-    [SerializeField] private bool showHitbox = true; // 是否顯示 Hitbox
     [SerializeField] private Material lineMaterial; // 剛才建立的材質
     [SerializeField] private float lineWidth = 0.05f; // 線條粗細
 
@@ -35,7 +34,7 @@ public class ShowHitbox : MonoBehaviour
     void Update()
     {
         // 如果關閉顯示，或是物件被禁用，就隱藏線條
-        if (!showHitbox || !boxCollider.enabled)
+        if (!DebugManager.Instance.showHitbox || !boxCollider.enabled)
         {
             lineRenderer.enabled = false;
             return;
