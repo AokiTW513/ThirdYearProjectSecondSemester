@@ -139,7 +139,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
-        rb.linearVelocity = moveDir * speed;
+        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
 
         // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
     }
