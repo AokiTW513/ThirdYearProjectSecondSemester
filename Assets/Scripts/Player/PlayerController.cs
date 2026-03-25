@@ -1,6 +1,4 @@
 using Mirror;
-using Mirror.Examples.Basic;
-using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -54,13 +52,20 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    // 當玩家換手把、或是從鍵盤改用手把時，這個會自動執行
+    public void OnControlsChanged(PlayerInput input)
+    {
+        currentPlayerDevice = input.currentControlScheme;
+        Debug.Log($"裝置已切換為: {currentPlayerDevice}");
+    }
+
     private void Update()
     {
         if (isLocalPlayer && NetworkClient.active)
         {
             PlayerMovement();
         }
-        else
+        else if(!NetworkClient.active)
         {
             PlayerMovement();
         }
@@ -68,8 +73,6 @@ public class PlayerController : NetworkBehaviour
 
     private void PlayerMovement()
     {
-        currentPlayerDevice = playerInput.currentControlScheme;
-            
         lookDirection = Vector3.zero;
         if (currentPlayerDevice == "Keyboard&Mouse")
         {

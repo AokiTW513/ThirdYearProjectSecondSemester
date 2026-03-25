@@ -381,7 +381,7 @@
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard&Mouse;Gamepad",
+                    "groups": "Keyboard&Mouse",
                     "action": "Skill02",
                     "isComposite": false,
                     "isPartOfComposite": false
