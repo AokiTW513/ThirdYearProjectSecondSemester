@@ -17,6 +17,7 @@ public class PlayerController : NetworkBehaviour
     [Header("Skill01")]
     [SerializeField] private bool isSkill01;
     [SerializeField] private bool canSkill01;
+    [SerializeField] private BoxCollider skill01Hitbox;
     [SerializeField] private float skill01MaxTime;
     [SerializeField] private float skill01Speed;
     [SerializeField] private float skill01CDMaxTime;
@@ -49,6 +50,12 @@ public class PlayerController : NetworkBehaviour
         if(!isLocalPlayer && NetworkClient.active)
         {
             Destroy(playerInput);
+            GetComponent<BoxCollider>().enabled = false;
+            GetComponent<Rigidbody>().isKinematic = true;
+        }
+        else if (isLocalPlayer)
+        {
+            playerInput.enabled = true;
         }
     }
 
@@ -160,6 +167,23 @@ public class PlayerController : NetworkBehaviour
     }
 
     #region Skill
+    [Command]
+    private void CmdToggleHitBox(int skillNumber, bool toggle)
+    {
+        RpcToggleHitBox(skillNumber, toggle);
+    }
+
+    [ClientRpc]
+    private void RpcToggleHitBox(int skillNumber, bool toggle)
+    {
+        switch (skillNumber)
+        {
+            case 1:
+                skill01Hitbox.enabled = toggle;
+                break;
+        }
+    }
+
     private void Skill01()
     {
         if(skill01Timer > 0)
@@ -173,6 +197,7 @@ public class PlayerController : NetworkBehaviour
             isSkill01 = false;
             skill01CDTimer = skill01CDMaxTime;
             skill01Timer = skill01MaxTime;
+            CmdToggleHitBox(1, false);
         }
     }
 
@@ -196,6 +221,7 @@ public class PlayerController : NetworkBehaviour
         {
             isSkill01 = true;
             canSkill01 = false;
+            CmdToggleHitBox(1, true);
         }   
     }
 
@@ -208,4 +234,10 @@ public class PlayerController : NetworkBehaviour
         }   
     }
     #endregion
+
+    [Command]
+    public void CmdPush()
+    {
+        rb.AddRelativeForce(0, 0, -50, ForceMode.Impulse);
+    }
 }

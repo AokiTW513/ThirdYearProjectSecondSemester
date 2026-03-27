@@ -6,6 +6,8 @@ public class DebugManager : MonoBehaviour
     public static DebugManager Instance { get; private set;}
 
     public bool showHitbox;
+    public Material playerHitbox;
+    public Material playerSkillHitbox;
 
     private void Awake()
     {

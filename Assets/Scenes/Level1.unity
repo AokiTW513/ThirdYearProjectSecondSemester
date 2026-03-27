@@ -421,7 +421,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79b12762338ad4fc4bb9e7a1c68a5b0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugManager
-  showHitbox: 0
+  showHitbox: 1
+  playerHitbox: {fileID: 2100000, guid: 52fcf700f557f488e96b4e8a6b6e47ee, type: 2}
+  playerSkillHitbox: {fileID: 2100000, guid: 6d7cb09941fa24e2bb8708523499ba44, type: 2}
 --- !u!1001 &1343617660
 PrefabInstance:
   m_ObjectHideFlags: 0

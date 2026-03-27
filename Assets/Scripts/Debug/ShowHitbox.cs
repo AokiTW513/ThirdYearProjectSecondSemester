@@ -11,8 +11,9 @@ public class ShowHitbox : MonoBehaviour
     private Vector3[] vertices = new Vector3[8];
 
     [Header("Debug Settings")]
-    [SerializeField] private Material lineMaterial; // 剛才建立的材質
     [SerializeField] private float lineWidth = 0.05f; // 線條粗細
+    [SerializeField] private bool isPlayerHitbox;
+    [SerializeField] private bool isPlayerSkillHitbox;
 
     void Start()
     {
@@ -20,7 +21,14 @@ public class ShowHitbox : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
 
         // 初始化 LineRenderer 設定
-        lineRenderer.material = lineMaterial;
+        if (isPlayerHitbox)
+        {
+            lineRenderer.material = DebugManager.Instance.playerHitbox;
+        }
+        else if (isPlayerSkillHitbox)
+        {
+            lineRenderer.material = DebugManager.Instance.playerSkillHitbox;
+        }
         lineRenderer.startWidth = lineWidth;
         lineRenderer.endWidth = lineWidth;
         lineRenderer.positionCount = 16; // 畫出一個完整的 Cube 邊框需要 16 個點
