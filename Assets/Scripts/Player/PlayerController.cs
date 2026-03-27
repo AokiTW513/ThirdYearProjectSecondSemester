@@ -48,7 +48,7 @@ public class PlayerController : NetworkBehaviour
 
         if(!isLocalPlayer && NetworkClient.active)
         {
-            playerInput.enabled = false;
+            Destroy(playerInput);
         }
     }
 
@@ -69,6 +69,7 @@ public class PlayerController : NetworkBehaviour
         {
             PlayerMovement();
         }
+        // Debug.Log($"Player{netId} Using: {currentPlayerDevice}");
     }
 
     private void PlayerMovement()
