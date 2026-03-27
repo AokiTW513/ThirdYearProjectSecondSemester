@@ -71,7 +71,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log($"裝置已切換為: {currentPlayerDevice}");
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (isLocalPlayer && NetworkClient.active)
         {
@@ -133,7 +133,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         //OutRange
-        if(transform.position.y < -30)
+        if(transform.position.y < -20)
         {
             int x = Random.Range(-19, 19);
             int z = Random.Range(-12, 12);
@@ -167,7 +167,7 @@ public class PlayerController : NetworkBehaviour
 
         Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
         rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
-
+        Debug.Log( rb.linearVelocity.y);
         // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
     }
 
