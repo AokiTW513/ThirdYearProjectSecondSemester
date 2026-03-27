@@ -1,4 +1,5 @@
 using Mirror;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +13,7 @@ public class PlayerController : NetworkBehaviour
     private PlayerInput playerInput;
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
+    private bool isPushed;
 
     [Space(10)]
     [Header("Skill01")]
@@ -21,6 +23,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float skill01MaxTime;
     [SerializeField] private float skill01Speed;
     [SerializeField] private float skill01CDMaxTime;
+    [SerializeField] private float skill01Force;
+    [SerializeField] private float skill01ForceY;
     private float skill01CDTimer;
     private float skill01Timer;
 
@@ -41,6 +45,7 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
+        isPushed = false;
         skill01Timer = skill01MaxTime;
         isSkill01 = false;
         isSkill02 = false;
@@ -89,7 +94,10 @@ public class PlayerController : NetworkBehaviour
 
         if(!isSkill01 && !isSkill02)
         {
-            PlayerMove(moveInput, lookDirection, currentPlayerDevice);
+            if (!isPushed)
+            {
+                PlayerMove(moveInput, lookDirection, currentPlayerDevice);
+            }
         }
         else if(isSkill01)
         {
@@ -123,6 +131,14 @@ public class PlayerController : NetworkBehaviour
                 skill02CDTimer -= Time.deltaTime;   
             }
         }
+
+        //OutRange
+        if(transform.position.y < -30)
+        {
+            int x = Random.Range(-19, 19);
+            int z = Random.Range(-12, 12);
+            transform.position = new Vector3(x, 1, z);
+        }
     }
 
     private void PlayerMove(Vector2 input, Vector3 lookDirection, string playerDevice)
@@ -130,7 +146,7 @@ public class PlayerController : NetworkBehaviour
         if (playerDevice == "Gamepad")
         {
             // 只有當玩家有推搖桿時才旋轉，否則放開搖桿角色會瞬間轉回預設方向
-            if (input.sqrMagnitude > 0.02f) 
+            if (input.sqrMagnitude > 0.03f) 
             {
                 Vector3 targetDirection = new Vector3(input.x, 0f, input.y);
                 // 使用 Quaternion.LookRotation 算出該方向的旋轉值
@@ -197,7 +213,14 @@ public class PlayerController : NetworkBehaviour
             isSkill01 = false;
             skill01CDTimer = skill01CDMaxTime;
             skill01Timer = skill01MaxTime;
-            CmdToggleHitBox(1, false);
+            if (NetworkClient.active)
+            {
+                CmdToggleHitBox(1, false);
+            }
+            else
+            {
+                skill01Hitbox.enabled = false;   
+            }
         }
     }
 
@@ -221,7 +244,14 @@ public class PlayerController : NetworkBehaviour
         {
             isSkill01 = true;
             canSkill01 = false;
-            CmdToggleHitBox(1, true);
+            if (NetworkClient.active)
+            {
+                CmdToggleHitBox(1, true);
+            }
+            else
+            {
+                skill01Hitbox.enabled = true;
+            }
         }   
     }
 
@@ -239,5 +269,23 @@ public class PlayerController : NetworkBehaviour
     public void CmdPush()
     {
         rb.AddRelativeForce(0, 0, -50, ForceMode.Impulse);
+    }
+    
+    public void Push(GameObject obj)
+    {
+        isPushed = true;
+
+        Vector3 horizontalForce = obj.transform.forward * skill01Force;
+        Vector3 verticalForce = Vector3.up * skill01ForceY;
+
+        rb.AddForce(horizontalForce + verticalForce, ForceMode.Impulse);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "Floor")
+        {
+            isPushed = false;   
+        }
     }
 }

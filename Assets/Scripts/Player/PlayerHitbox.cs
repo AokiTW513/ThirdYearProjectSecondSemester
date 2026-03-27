@@ -12,11 +12,16 @@ public class PlayerHitbox : NetworkBehaviour
 
     private void OnTriggerEnter(Collider collider)
     {
-        if (!NetworkServer.active) return;
-
         if(collider.gameObject.tag == "Skill01")
         {
-            playerController.CmdPush();
+            if (NetworkClient.active)
+            {
+                playerController.CmdPush();
+            }
+            else
+            {
+                playerController.Push(collider.gameObject);
+            }
             Debug.Log("IDK");
         }
     }
