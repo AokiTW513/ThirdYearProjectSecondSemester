@@ -167,7 +167,7 @@ public class PlayerController : NetworkBehaviour
 
         Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
         rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
-        Debug.Log( rb.linearVelocity.y);
+        // Debug.Log( rb.linearVelocity.y);
         // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
     }
 
@@ -183,6 +183,18 @@ public class PlayerController : NetworkBehaviour
     }
 
     #region Skill
+    private void ToggleHitBox(int skillNumber, bool toggle)
+    {
+        if (NetworkClient.active)
+        {
+            CmdToggleHitBox(skillNumber, toggle);       
+        }
+        else
+        {
+            StartToggleHitBox(skillNumber, toggle);
+        }
+    }
+
     [Command]
     private void CmdToggleHitBox(int skillNumber, bool toggle)
     {
@@ -192,12 +204,17 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     private void RpcToggleHitBox(int skillNumber, bool toggle)
     {
+        StartToggleHitBox(skillNumber, toggle);
+    }
+
+    private void StartToggleHitBox(int skillNumber, bool toggle)
+    {
         switch (skillNumber)
         {
             case 1:
                 skill01Hitbox.enabled = toggle;
                 break;
-        }
+        }  
     }
 
     private void Skill01()
@@ -213,14 +230,7 @@ public class PlayerController : NetworkBehaviour
             isSkill01 = false;
             skill01CDTimer = skill01CDMaxTime;
             skill01Timer = skill01MaxTime;
-            if (NetworkClient.active)
-            {
-                CmdToggleHitBox(1, false);
-            }
-            else
-            {
-                skill01Hitbox.enabled = false;   
-            }
+            ToggleHitBox(1, false);
         }
     }
 
@@ -244,14 +254,7 @@ public class PlayerController : NetworkBehaviour
         {
             isSkill01 = true;
             canSkill01 = false;
-            if (NetworkClient.active)
-            {
-                CmdToggleHitBox(1, true);
-            }
-            else
-            {
-                skill01Hitbox.enabled = true;
-            }
+            ToggleHitBox(1, true);
         }   
     }
 
@@ -265,13 +268,12 @@ public class PlayerController : NetworkBehaviour
     }
     #endregion
 
-    [Command]
-    public void CmdPush()
-    {
-        rb.AddRelativeForce(0, 0, -50, ForceMode.Impulse);
-    }
-    
     public void Push(GameObject obj)
+    {
+        StartPush(obj);
+    }
+
+    public void StartPush(GameObject obj)
     {
         isPushed = true;
 

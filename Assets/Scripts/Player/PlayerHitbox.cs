@@ -14,14 +14,7 @@ public class PlayerHitbox : NetworkBehaviour
     {
         if(collider.gameObject.tag == "Skill01")
         {
-            if (NetworkClient.active)
-            {
-                playerController.CmdPush();
-            }
-            else
-            {
-                playerController.Push(collider.gameObject);
-            }
+            playerController.Push(collider.gameObject);
             Debug.Log("IDK");
         }
     }
