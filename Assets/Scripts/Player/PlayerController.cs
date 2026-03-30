@@ -135,8 +135,8 @@ public class PlayerController : NetworkBehaviour
         //OutRange
         if(transform.position.y < -20)
         {
-            int x = Random.Range(-19, 19);
-            int z = Random.Range(-12, 12);
+            int x = Random.Range(-9, 9);
+            int z = Random.Range(-9, 9);
             transform.position = new Vector3(x, 1, z);
         }
     }
