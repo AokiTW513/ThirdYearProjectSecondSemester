@@ -1,5 +1,4 @@
 using Mirror;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +13,8 @@ public class PlayerController : NetworkBehaviour
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
+    public int playerID { get; private set;}
+    public bool isGetItem { get; private set;}
 
     [Space(10)]
     [Header("Skill01")]
@@ -62,6 +63,12 @@ public class PlayerController : NetworkBehaviour
         {
             playerInput.enabled = true;
         }
+
+        if (!NetworkClient.active)
+        {
+            playerID = GameManager.Instance.OnNewPlayer(this.gameObject);
+            gameObject.name = $"Player {playerID}";
+        }
     }
 
     // 當玩家換手把、或是從鍵盤改用手把時，這個會自動執行
@@ -73,6 +80,8 @@ public class PlayerController : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+
         if (isLocalPlayer && NetworkClient.active)
         {
             PlayerMovement();
@@ -250,6 +259,8 @@ public class PlayerController : NetworkBehaviour
 
     public void OnSkill01(InputAction.CallbackContext callbackContext)
     {
+        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+
         if (canSkill01 && !isSkill01 && !isSkill02)
         {
             isSkill01 = true;
@@ -260,6 +271,8 @@ public class PlayerController : NetworkBehaviour
 
     public void OnSkill02(InputAction.CallbackContext callbackContext)
     {
+        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+
         if (canSkill02 && !isSkill01 && !isSkill02)
         {
             isSkill02 = true;
@@ -289,5 +302,15 @@ public class PlayerController : NetworkBehaviour
         {
             isPushed = false;   
         }
+    }
+
+    public void OnStartButton(InputAction.CallbackContext callbackContext)
+    {
+        GameManager.Instance.StartGame();   
+    }
+
+    public void TPToSpawnPoint(Vector3 position)
+    {
+        transform.position = position;   
     }
 }
