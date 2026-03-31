@@ -839,7 +839,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   playerCount: 0
   minPlayer: 2
-  maxGameTime: 5
+  maxGameTime: 60
   currentGameTime: 0
   maxCountTime: 3
   currentCountTime: 0
