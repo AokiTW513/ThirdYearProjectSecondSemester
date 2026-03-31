@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
                 {
                     PlayerController playerController = player.GetComponent<PlayerController>();
                     playerController.TPToSpawnPoint(playerSpawnPoints[playerController.playerID - 1].transform.position);
+                    playerController.Initialized();
                 }
 
                 UIManager.Instance.ToggleCountDownTimer(true);

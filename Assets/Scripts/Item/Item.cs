@@ -39,8 +39,8 @@ public class Item : MonoBehaviour
         //OutRange
         if(itemParent.transform.position.y < -10)
         {
-            int x = Random.Range(-9, 9);
-            int z = Random.Range(-9, 9);
+            int x = Random.Range(-8, 8);
+            int z = Random.Range(-8, 8);
             itemParent.transform.position = new Vector3(x, respawnY, z);  
         }
     }

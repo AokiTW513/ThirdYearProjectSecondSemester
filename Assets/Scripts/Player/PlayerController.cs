@@ -71,6 +71,17 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    public void Initialized()
+    {
+        isPushed = false;
+        skill01Timer = skill01MaxTime;
+        isSkill01 = false;
+        isSkill02 = false;
+        canSkill01 = true;
+        canSkill02 = true;   
+        rb.linearVelocity = new Vector3(0, 0, 0);
+    }
+
     // 當玩家換手把、或是從鍵盤改用手把時，這個會自動執行
     public void OnControlsChanged(PlayerInput input)
     {
@@ -144,8 +155,8 @@ public class PlayerController : NetworkBehaviour
         //OutRange
         if(transform.position.y < -10)
         {
-            int x = Random.Range(-9, 9);
-            int z = Random.Range(-9, 9);
+            int x = Random.Range(-8, 8);
+            int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
         }
