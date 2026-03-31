@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Mirror;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -159,6 +160,12 @@ public class PlayerController : NetworkBehaviour
             int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
+        }
+
+        //阿就退出(´・ω・｀)
+        if(Keyboard.current.escapeKey.wasPressedThisFrame || Gamepad.current.selectButton.wasPressedThisFrame)
+        {
+            Application.Quit();   
         }
     }
 
