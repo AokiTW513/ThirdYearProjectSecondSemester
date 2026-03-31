@@ -161,12 +161,6 @@ public class PlayerController : NetworkBehaviour
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
         }
-
-        //阿就退出(´・ω・｀)
-        if(Keyboard.current.escapeKey.wasPressedThisFrame || Gamepad.current.selectButton.wasPressedThisFrame)
-        {
-            Application.Quit();   
-        }
     }
 
     private void PlayerMove(Vector2 input, Vector3 lookDirection, string playerDevice)
@@ -332,6 +326,11 @@ public class PlayerController : NetworkBehaviour
     public void OnStartButton(InputAction.CallbackContext callbackContext)
     {
         GameManager.Instance.StartGame();   
+    }
+
+    public void OnQuitButton(InputAction.CallbackContext callbackContext)
+    {
+        Application.Quit();   
     }
 
     public void TPToSpawnPoint(Vector3 position)
