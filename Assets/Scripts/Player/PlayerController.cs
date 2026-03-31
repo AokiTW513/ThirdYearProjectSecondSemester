@@ -68,6 +68,7 @@ public class PlayerController : NetworkBehaviour
         if (!NetworkClient.active)
         {
             playerID = GameManager.Instance.OnNewPlayer(this.gameObject);
+            UIManager.Instance.TogglePlayerIcon(playerID, true);
             gameObject.name = $"Player {playerID}";
         }
     }

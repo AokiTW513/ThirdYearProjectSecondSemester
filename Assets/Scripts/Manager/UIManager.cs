@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Text countDownTimer;
     [SerializeField] private Text gameTimer;
+    [SerializeField] private List<GameObject> playerIcons;
 
     private void Awake()
     {
@@ -41,5 +43,10 @@ public class UIManager : MonoBehaviour
     public void ChangeGameTimer(float sec)
     {
         gameTimer.text = Mathf.FloorToInt(sec / 60).ToString("00") + ":" + (sec % 60).ToString("00");   
+    }
+
+    public void TogglePlayerIcon(int playerID, bool toggle)
+    {
+        playerIcons[playerID - 1].SetActive(toggle);
     }
 }
