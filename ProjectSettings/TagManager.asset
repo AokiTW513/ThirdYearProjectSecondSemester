@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Skill01
   - Floor
+  - Item
   layers:
   - Default
   - TransparentFX

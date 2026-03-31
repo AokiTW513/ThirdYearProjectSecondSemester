@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using Mirror.Examples.Basic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -14,6 +17,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int currentCountTime;
     [SerializeField] private int maxShowWinnerTime;
     [SerializeField] private List<GameObject> playerSpawnPoints;
+    public GameObject itemSpawnPoint;
+    [SerializeField] private GameObject itemPrefab;
     public bool isPause { get; private set;}
     public bool isCounting { get; private set;}
     public bool isPlaying { get; private set;}
@@ -21,6 +26,7 @@ public class GameManager : MonoBehaviour
     private List<GameObject> players = new List<GameObject>();
     private int winPlayerID;
     private Coroutine disableCoroutine;
+    private GameObject itemObject;
 
     private void Awake()
     {
@@ -73,6 +79,9 @@ public class GameManager : MonoBehaviour
                 isInLobby = false;
                 currentCountTime = maxCountTime;
 
+                itemObject = Instantiate(itemPrefab, itemSpawnPoint.transform);
+
+                //Tp Players to Spawn Points
                 foreach(GameObject player in players)
                 {
                     PlayerController playerController = player.GetComponent<PlayerController>();
@@ -136,14 +145,7 @@ public class GameManager : MonoBehaviour
         isPlaying = false;
         UIManager.Instance.ToggleGameTimer(false);
 
-        foreach(GameObject player in players)
-        {
-            PlayerController playerController = player.GetComponent<PlayerController>();
-            if (playerController.isGetItem)
-            {
-                winPlayerID = playerController.playerID;
-            }
-        }
+        winPlayerID = itemObject.GetComponentInChildren<Item>().GetWinPlayerID();
 
         //偷拿倒數用的Text來顯示玩家勝利
         if (winPlayerID == 0)
@@ -172,5 +174,12 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(maxShowWinnerTime);
         UIManager.Instance.ToggleCountDownTimer(false);
         isInLobby = true;
+        Item item = itemObject.GetComponentInChildren<Item>();
+        if(item.nowGetItemPlayer != null)
+        {
+            item.nowGetItemPlayer.GetComponent<PlayerController>().itemObject = null;
+        }
+        item.ClearGetItemPlayer();
+        Destroy(itemObject);
     }
 }

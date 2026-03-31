@@ -14,7 +14,7 @@ public class PlayerController : NetworkBehaviour
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
     public int playerID { get; private set;}
-    public bool isGetItem { get; private set;}
+    public GameObject itemObject;
 
     [Space(10)]
     [Header("Skill01")]
@@ -142,11 +142,12 @@ public class PlayerController : NetworkBehaviour
         }
 
         //OutRange
-        if(transform.position.y < -20)
+        if(transform.position.y < -10)
         {
             int x = Random.Range(-9, 9);
             int z = Random.Range(-9, 9);
             transform.position = new Vector3(x, 1, z);
+            isPushed = false;   
         }
     }
 
@@ -232,7 +233,6 @@ public class PlayerController : NetworkBehaviour
         {
             rb.linearVelocity = transform.forward * skill01Speed;
             skill01Timer -= Time.deltaTime;
-            Debug.Log("OMG is Skill01 :O");
         }
         else
         {
@@ -266,6 +266,7 @@ public class PlayerController : NetworkBehaviour
             isSkill01 = true;
             canSkill01 = false;
             ToggleHitBox(1, true);
+            Debug.Log("OMG is Skill01 :O");
         }   
     }
 
@@ -294,6 +295,12 @@ public class PlayerController : NetworkBehaviour
         Vector3 verticalForce = Vector3.up * skill01ForceY;
 
         rb.AddForce(horizontalForce + verticalForce, ForceMode.Impulse);
+
+        if(itemObject != null)
+        {
+            itemObject.GetComponentInChildren<Item>().DropItem(obj);
+            itemObject = null;
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
