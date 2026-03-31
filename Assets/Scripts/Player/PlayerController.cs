@@ -326,7 +326,14 @@ public class PlayerController : NetworkBehaviour
 
     public void OnStartButton(InputAction.CallbackContext callbackContext)
     {
-        GameManager.Instance.StartGame();   
+        if(playerID == 1)
+        {
+            GameManager.Instance.StartGame();
+        }
+        else
+        {
+            Debug.Log("Bro, you are not Player 1, you cannot start the game.");   
+        }
     }
 
     public void OnQuitButton(InputAction.CallbackContext callbackContext)
