@@ -156,6 +156,12 @@ public class PlayerController : NetworkBehaviour
         //OutRange
         if(transform.position.y < -10)
         {
+            if(itemObject != null)
+            {
+                itemObject.GetComponentInChildren<Item>().DropItem();
+                itemObject = null;
+            }
+
             int x = Random.Range(-8, 8);
             int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
@@ -189,16 +195,8 @@ public class PlayerController : NetworkBehaviour
 
         if (!isPushed)
         {
-            float checkDistance = 0.1f;
-        
-            int layerMask = LayerMask.GetMask("Floor");
-
             Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
-            bool isHit = Physics.Raycast(transform.position, moveDir, checkDistance, layerMask);
-            if (!isHit)
-            {
-                rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
-            }
+            rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
             // Debug.Log( rb.linearVelocity.y);
             // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
         }

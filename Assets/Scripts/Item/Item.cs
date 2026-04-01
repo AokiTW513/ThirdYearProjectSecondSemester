@@ -82,6 +82,15 @@ public class Item : MonoBehaviour
         canGet = false;
         cannotGetTimer = maxCannotGetTime; //讓他一段時間不能被拿，不然會掉了後本人或敵人秒拿._.
     }
+
+    public void DropItem()
+    {
+        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().playerID} Drop Item!");
+        rb.isKinematic = false;
+        ClearGetItemPlayer();
+        canGet = false;
+        cannotGetTimer = maxCannotGetTime; //讓他一段時間不能被拿，不然會掉了後本人或敵人秒拿._.
+    }
     
     public void SetItemParent(Transform transform)
     {

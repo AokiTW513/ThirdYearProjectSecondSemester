@@ -175,12 +175,15 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(maxShowWinnerTime);
         UIManager.Instance.ToggleCountDownTimer(false);
         isInLobby = true;
-        Item item = itemObject.GetComponentInChildren<Item>();
-        if(item.nowGetItemPlayer != null)
+        if(itemObject != null)
         {
-            item.nowGetItemPlayer.GetComponent<PlayerController>().itemObject = null;
+            Item item = itemObject.GetComponentInChildren<Item>();
+            if(item.nowGetItemPlayer != null)
+            {
+                item.nowGetItemPlayer.GetComponent<PlayerController>().itemObject = null;
+            }
+            item.ClearGetItemPlayer();
+            Destroy(itemObject);
         }
-        item.ClearGetItemPlayer();
-        Destroy(itemObject);
     }
 }
