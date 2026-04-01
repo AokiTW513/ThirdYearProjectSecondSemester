@@ -18,6 +18,7 @@ public class PlayerController : NetworkBehaviour
     private bool isPushed;
     public int playerID { get; private set;}
     public GameObject itemObject;
+    private float getItemTime;
 
     [Space(10)]
     [Header("Skill01")]
@@ -49,12 +50,7 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
-        isPushed = false;
-        skill01Timer = skill01MaxTime;
-        isSkill01 = false;
-        isSkill02 = false;
-        canSkill01 = true;
-        canSkill02 = true;
+        Initialized();
 
         if(!isLocalPlayer && NetworkClient.active)
         {
@@ -84,6 +80,7 @@ public class PlayerController : NetworkBehaviour
         canSkill01 = true;
         canSkill02 = true;   
         rb.linearVelocity = new Vector3(0, 0, 0);
+        getItemTime = 0;
     }
 
     // 當玩家換手把、或是從鍵盤改用手把時，這個會自動執行
@@ -166,6 +163,12 @@ public class PlayerController : NetworkBehaviour
             int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
+        }
+
+        if(itemObject != null)
+        {
+            getItemTime += Time.deltaTime;
+            GameManager.Instance.SetPlayerGetItemTime(playerID, getItemTime);
         }
     }
 

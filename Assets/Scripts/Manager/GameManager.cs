@@ -24,9 +24,10 @@ public class GameManager : MonoBehaviour
     public bool isPlaying { get; private set;}
     public bool isInLobby { get; private set;}
     private List<GameObject> players = new List<GameObject>();
-    private int winPlayerID;
+    public List<int> winPlayerID = new List<int>();
     private Coroutine disableCoroutine;
     private GameObject itemObject;
+    public List<float> playerGetItemTime;
 
     private void Awake()
     {
@@ -80,6 +81,12 @@ public class GameManager : MonoBehaviour
                 currentCountTime = maxCountTime;
 
                 itemObject = Instantiate(itemPrefab, itemSpawnPoint.transform);
+
+                playerGetItemTime.Clear();
+                for(int i = 0; i < playerCount; i++)
+                {
+                    playerGetItemTime.Add(0);
+                }
 
                 //Tp Players to Spawn Points
                 foreach(GameObject player in players)
@@ -146,19 +153,34 @@ public class GameManager : MonoBehaviour
         isPlaying = false;
         UIManager.Instance.ToggleGameTimer(false);
 
-        winPlayerID = itemObject.GetComponentInChildren<Item>().GetWinPlayerID();
+        // winPlayerID = itemObject.GetComponentInChildren<Item>().GetWinPlayerID();
 
-        //偷拿倒數用的Text來顯示玩家勝利
-        if (winPlayerID == 0)
+        foreach(GameObject player in players)
         {
-            Debug.Log("Wait. How does nobody win this game lmao");
-            UIManager.Instance.ChangeCountDownTimer("Wait. How does nobody win this game lmao");
+            int nowPlayerID = player.GetComponent<PlayerController>().playerID;
+            if(winPlayerID.Count == 0)
+            {
+                winPlayerID.Add(nowPlayerID);   
+            }
+            else
+            {
+                if(playerGetItemTime[nowPlayerID - 1] >= playerGetItemTime[winPlayerID[0] - 1])
+                {
+                    if(playerGetItemTime[nowPlayerID - 1] == playerGetItemTime[winPlayerID[0] - 1])
+                    {
+                        winPlayerID.Add(nowPlayerID);   
+                    }
+                    else
+                    {
+                        winPlayerID.Clear();
+                        winPlayerID.Add(nowPlayerID);   
+                    }
+                }
+            }
         }
-        else
-        {
-            Debug.Log($"Player {winPlayerID} Win!!!");
-            UIManager.Instance.ChangeCountDownTimer($"Player {winPlayerID} Win!!!");
-        }
+
+        Debug.Log($"Player {string.Join(", ", winPlayerID)} Win!!!");
+        UIManager.Instance.ChangeCountDownTimer($"Player {string.Join(", ", winPlayerID)} Win!!!");
 
         UIManager.Instance.ToggleCountDownTimer(true);
         if(disableCoroutine != null)
@@ -167,7 +189,7 @@ public class GameManager : MonoBehaviour
         }
         disableCoroutine = StartCoroutine(TrunOffWinText());
 
-        winPlayerID = 0;
+        winPlayerID.Clear();
     }
 
     private IEnumerator TrunOffWinText()
@@ -184,6 +206,13 @@ public class GameManager : MonoBehaviour
             }
             item.ClearGetItemPlayer();
             Destroy(itemObject);
+
+            playerGetItemTime = new List<float>(4);
         }
+    }
+
+    public void SetPlayerGetItemTime(int playerID, float time)
+    {
+        playerGetItemTime[playerID - 1] = time;
     }
 }

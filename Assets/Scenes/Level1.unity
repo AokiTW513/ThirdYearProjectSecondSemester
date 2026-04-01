@@ -1148,7 +1148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   playerCount: 0
   minPlayer: 2
-  maxGameTime: 60
+  maxGameTime: 5
   currentGameTime: 0
   maxCountTime: 3
   currentCountTime: 0
@@ -1160,6 +1160,8 @@ MonoBehaviour:
   - {fileID: 615579269}
   itemSpawnPoint: {fileID: 1196583914}
   itemPrefab: {fileID: 9084693982612996033, guid: 8b0fb13a854d2f14299f7934c0950b01, type: 3}
+  winPlayerID: 
+  playerGetItemTime: []
 --- !u!1 &1045305440
 GameObject:
   m_ObjectHideFlags: 0
