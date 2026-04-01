@@ -1,5 +1,7 @@
+using System.Linq;
 using JetBrains.Annotations;
 using Mirror;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -116,10 +118,7 @@ public class PlayerController : NetworkBehaviour
 
         if(!isSkill01 && !isSkill02)
         {
-            if (!isPushed)
-            {
-                PlayerMove(moveInput, lookDirection, currentPlayerDevice);
-            }
+            PlayerMove(moveInput, lookDirection, currentPlayerDevice);
         }
         else if(isSkill01)
         {
@@ -188,10 +187,21 @@ public class PlayerController : NetworkBehaviour
             transform.LookAt(lookDirection);
         }
 
-        Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
-        rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
-        // Debug.Log( rb.linearVelocity.y);
-        // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
+        if (!isPushed)
+        {
+            float checkDistance = 0.1f;
+        
+            int layerMask = LayerMask.GetMask("Floor");
+
+            Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
+            bool isHit = Physics.Raycast(transform.position, moveDir, checkDistance, layerMask);
+            if (!isHit)
+            {
+                rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
+            }
+            // Debug.Log( rb.linearVelocity.y);
+            // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
+        }
     }
 
     private Vector3 CalculateMouseLook()
@@ -302,6 +312,14 @@ public class PlayerController : NetworkBehaviour
 
     public void StartPush(GameObject obj)
     {
+        if (isSkill01)
+        {
+            isSkill01 = false;
+            skill01CDTimer = skill01CDMaxTime;
+            skill01Timer = skill01MaxTime;
+            ToggleHitBox(1, false);    
+        }
+
         isPushed = true;
 
         Vector3 horizontalForce = obj.transform.forward * skill01Force;
