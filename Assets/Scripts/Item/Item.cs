@@ -1,29 +1,36 @@
+using Mirror;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class Item : MonoBehaviour
+public class Item : NetworkBehaviour
 {
-    public GameObject nowGetItemPlayer;
+    [SyncVar] public GameObject nowGetItemPlayer;
     private Rigidbody rb;
     private BoxCollider boxCollider;
     public bool canGet { get; private set;}
-    private float cannotGetTimer;
+    [SyncVar] private float cannotGetTimer;
 
     [SerializeField] private float respawnY;
     [SerializeField] private float maxCannotGetTime;
     [SerializeField] private GameObject itemParent;
     [SerializeField] private float force;
     [SerializeField] private float forceY;
+    [SerializeField] private float syncTime;
+    private float syncTimer;
+    private Vector3 targetPosition;
+    [SerializeField] private float positionLerpSpeed;
 
     private void Awake()
     {
         rb = GetComponentInParent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
         canGet = true;
+        syncTimer = syncTime;
     }
 
     private void Update()
     {
-        if (!canGet)
+        if (!canGet && GameManager.Instance.GetHasAuthority())
         {
             if(cannotGetTimer >= 0)
             {
@@ -37,12 +44,33 @@ public class Item : MonoBehaviour
         }
 
         //OutRange
-        if(itemParent.transform.position.y < -10)
+        if(itemParent.transform.position.y < -10 && GameManager.Instance.GetHasAuthority())
         {
             int x = Random.Range(-8, 8);
             int z = Random.Range(-8, 8);
             itemParent.transform.position = new Vector3(x, respawnY, z);  
         }
+
+        if (GameManager.Instance.GetHasAuthority() && GameManager.Instance.GetIsPlaying())
+        {
+            if(syncTimer >= 0)
+            {
+                syncTimer -= Time.deltaTime;
+            }
+            else
+            {
+                syncTimer = syncTime;
+                RpcSyncItemPosition(itemParent.transform.position);
+            }
+        }
+
+        itemParent.transform.position = Vector3.Lerp(itemParent.transform.position, targetPosition, Time.deltaTime * positionLerpSpeed);
+    }
+
+    [ClientRpc]
+    private void RpcSyncItemPosition(Vector3 pos)
+    {
+        targetPosition = pos;
     }
 
     public void SetGetItemPlayer(GameObject player)
@@ -50,7 +78,7 @@ public class Item : MonoBehaviour
         nowGetItemPlayer = player.GetComponentInParent<PlayerController>().gameObject;
         rb.isKinematic = true;
         boxCollider.enabled = false;
-        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().playerID} Get Item!");
+        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().GetPlayerID()} Get Item!");
     }
 
     public void ClearGetItemPlayer()
@@ -63,7 +91,7 @@ public class Item : MonoBehaviour
     {
         if(nowGetItemPlayer != null)
         {
-            return nowGetItemPlayer.GetComponent<PlayerController>().playerID;  
+            return nowGetItemPlayer.GetComponent<PlayerController>().GetPlayerID();  
         }
         else
         {
@@ -73,7 +101,7 @@ public class Item : MonoBehaviour
 
     public void DropItem(GameObject obj)
     {
-        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().playerID} Drop Item!");
+        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().GetPlayerID()} Drop Item!");
         rb.isKinematic = false;
         Vector3 horizontalForce = -obj.transform.forward * force;
         Vector3 verticalForce = Vector3.up * forceY;
@@ -85,7 +113,7 @@ public class Item : MonoBehaviour
 
     public void DropItem()
     {
-        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().playerID} Drop Item!");
+        Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().GetPlayerID()} Drop Item!");
         rb.isKinematic = false;
         ClearGetItemPlayer();
         canGet = false;

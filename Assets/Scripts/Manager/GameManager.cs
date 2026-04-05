@@ -1,33 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using Mirror.Examples.Basic;
-using Unity.VisualScripting;
+using Mirror;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {    
     public static GameManager Instance { get; private set;}
 
-    [SerializeField] private int playerCount;
+    private bool hasAuthority;
+    [SyncVar] private int playerCount;
     [SerializeField] private int minPlayer;
     [SerializeField] private int maxGameTime;
-    [SerializeField] private float currentGameTime;
+    [SyncVar] private float currentGameTime;
     [SerializeField] private int maxCountTime;
-    [SerializeField] private int currentCountTime;
+    [SyncVar] private int currentCountTime;
     [SerializeField] private int maxShowWinnerTime;
     [SerializeField] private List<GameObject> playerSpawnPoints;
     public GameObject itemSpawnPoint;
     [SerializeField] private GameObject itemPrefab;
-    public bool isPause { get; private set;}
-    public bool isCounting { get; private set;}
-    public bool isPlaying { get; private set;}
-    public bool isInLobby { get; private set;}
-    private List<GameObject> players = new List<GameObject>();
+    [SyncVar] private bool isPause;
+    [SyncVar] private bool isCounting;
+    [SyncVar] private bool isPlaying;
+    [SyncVar] private bool isInLobby;
+    private SyncList<GameObject> players = new SyncList<GameObject>();
     public List<int> winPlayerID = new List<int>();
     private Coroutine disableCoroutine;
     private GameObject itemObject;
-    public List<float> playerGetItemTime;
+    public SyncList<float> playerGetItemTime = new SyncList<float>();
 
     private void Awake()
     {
@@ -45,6 +44,18 @@ public class GameManager : MonoBehaviour
         isInLobby = true;
     }
 
+    private void Start()
+    {
+        if (NetworkClient.active || NetworkServer.active)
+        {
+            hasAuthority = isServer;
+        }
+        else
+        {
+            hasAuthority = true;   
+        }   
+    }
+
     private void Update()
     {
         if(isPlaying && !isPause)
@@ -52,7 +63,7 @@ public class GameManager : MonoBehaviour
             if(currentGameTime >= 0)
             {
                 currentGameTime -= Time.deltaTime;
-                UIManager.Instance.ChangeGameTimer(currentGameTime);
+                LevelUIManager.Instance.ChangeGameTimer(currentGameTime);
             }
             else
             {
@@ -62,11 +73,83 @@ public class GameManager : MonoBehaviour
         }        
     }
 
-    public int OnNewPlayer(GameObject obj)
+    #region Get Var
+    public bool GetIsPause()
     {
-        playerCount++;
-        players.Add(obj);
-        return playerCount;
+        return isPause;
+    }
+
+    public bool GetIsCounting()
+    {
+        return isCounting;
+    }
+
+    public bool GetIsInLobby()
+    {
+        return isInLobby;
+    }
+
+    public bool GetIsPlaying()
+    {
+        return isPlaying;
+    }
+
+    public bool GetHasAuthority()
+    {
+        return hasAuthority;
+    }
+    #endregion
+
+    #region Toggle Var
+    public void TogglePause()
+    {
+        if (hasAuthority)
+        {
+            ApplyPause();  
+        }
+        else
+        {
+            CmdTogglePause();   
+        }
+    }
+
+    [Command]
+    private void CmdTogglePause()
+    {
+        ApplyPause();
+    }
+
+
+    private void ApplyPause()
+    {
+        isPause = !isPause;
+        RpcApplyPause();
+    }
+
+    [ClientRpc]
+    private void RpcApplyPause()
+    {
+        if (isPause)
+        {
+            Time.timeScale = 0f;
+            LevelUIManager.Instance.TogglePauseText(false);
+        }
+        else
+        {
+            Time.timeScale = 1f;   
+            LevelUIManager.Instance.TogglePauseText(true);
+        }    
+    }
+    #endregion
+
+    public void OnNewPlayer(GameObject obj)
+    {
+        if (hasAuthority)
+        {
+            playerCount++;
+            players.Add(obj);
+            obj.GetComponent<PlayerController>().SetPlayerID(playerCount);
+        }
     }
 
     public void StartGame()
@@ -80,7 +163,8 @@ public class GameManager : MonoBehaviour
                 isInLobby = false;
                 currentCountTime = maxCountTime;
 
-                itemObject = Instantiate(itemPrefab, itemSpawnPoint.transform);
+                itemObject = Instantiate(itemPrefab, itemSpawnPoint.transform.position, itemSpawnPoint.transform.rotation);
+                NetworkServer.Spawn(itemObject);
 
                 playerGetItemTime.Clear();
                 for(int i = 0; i < playerCount; i++)
@@ -92,21 +176,16 @@ public class GameManager : MonoBehaviour
                 foreach(GameObject player in players)
                 {
                     PlayerController playerController = player.GetComponent<PlayerController>();
-                    playerController.TPToSpawnPoint(playerSpawnPoints[playerController.playerID - 1].transform.position);
-                    playerController.Initialized();
+                    playerController.RpcTPToSpawnPoint(playerSpawnPoints[playerController.GetPlayerID() - 1].transform.position);
+                    playerController.RpcInitialized();
                 }
 
-                UIManager.Instance.ToggleCountDownTimer(true);
-                if(disableCoroutine != null)
-                {
-                    StopCoroutine(disableCoroutine);
-                }
-                disableCoroutine = StartCoroutine(StartCountDown());
+                RpcStartGame(); 
             }
             else
             {
-                UIManager.Instance.ChangeCountDownTimer("老兄你也許需要個朋友...");
-                UIManager.Instance.ToggleCountDownTimer(true);
+                LevelUIManager.Instance.ChangeCountDownTimer("老兄你也許需要個朋友...");
+                LevelUIManager.Instance.ToggleCountDownTimer(true);
                 if(disableCoroutine != null)
                 {
                     StopCoroutine(disableCoroutine);
@@ -116,12 +195,23 @@ public class GameManager : MonoBehaviour
         }
    }
 
+   [ClientRpc]
+    private void RpcStartGame()
+    {
+        LevelUIManager.Instance.ToggleCountDownTimer(true);
+        if(disableCoroutine != null)
+        {
+            StopCoroutine(disableCoroutine);
+        }
+        disableCoroutine = StartCoroutine(StartCountDown());
+    }
+
     private IEnumerator StartCountDown()
     {
         if(currentCountTime > 0)
         {
             Debug.Log(currentCountTime);
-            UIManager.Instance.ChangeCountDownTimer(currentCountTime.ToString());
+            LevelUIManager.Instance.ChangeCountDownTimer(currentCountTime.ToString());
             currentCountTime -= 1;
             yield return new WaitForSeconds(1);
             disableCoroutine = StartCoroutine(StartCountDown());
@@ -131,10 +221,10 @@ public class GameManager : MonoBehaviour
             if(currentCountTime != -1)
             {
                 Debug.Log("Fight!!!");
-                UIManager.Instance.ChangeCountDownTimer("Fight!!!");
+                LevelUIManager.Instance.ChangeCountDownTimer("Fight!!!");
                 isCounting = false;
                 isPlaying = true;
-                UIManager.Instance.ToggleGameTimer(true);
+                LevelUIManager.Instance.ToggleGameTimer(true);
                 currentCountTime -= 1;
                 yield return new WaitForSeconds(1);
                 disableCoroutine = StartCoroutine(StartCountDown());
@@ -143,7 +233,7 @@ public class GameManager : MonoBehaviour
             {
                 //讓他在多一秒才會關掉Fight!!!
                 yield return new WaitForSeconds(1);
-                UIManager.Instance.ToggleCountDownTimer(false);
+                LevelUIManager.Instance.ToggleCountDownTimer(false);
             }
         }
     }
@@ -151,13 +241,13 @@ public class GameManager : MonoBehaviour
     private void GameOver()
     {
         isPlaying = false;
-        UIManager.Instance.ToggleGameTimer(false);
+        LevelUIManager.Instance.ToggleGameTimer(false);
 
         // winPlayerID = itemObject.GetComponentInChildren<Item>().GetWinPlayerID();
 
         foreach(GameObject player in players)
         {
-            int nowPlayerID = player.GetComponent<PlayerController>().playerID;
+            int nowPlayerID = player.GetComponent<PlayerController>().GetPlayerID();
             if(winPlayerID.Count == 0)
             {
                 winPlayerID.Add(nowPlayerID);   
@@ -180,9 +270,9 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Player {string.Join(", ", winPlayerID)} Win!!!");
-        UIManager.Instance.ChangeCountDownTimer($"Player {string.Join(", ", winPlayerID)} Win!!!");
+        LevelUIManager.Instance.ChangeCountDownTimer($"Player {string.Join(", ", winPlayerID)} Win!!!");
 
-        UIManager.Instance.ToggleCountDownTimer(true);
+        LevelUIManager.Instance.ToggleCountDownTimer(true);
         if(disableCoroutine != null)
         {
             StopCoroutine(disableCoroutine);
@@ -195,7 +285,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator TrunOffWinText()
     {
         yield return new WaitForSeconds(maxShowWinnerTime);
-        UIManager.Instance.ToggleCountDownTimer(false);
+        LevelUIManager.Instance.ToggleCountDownTimer(false);
         isInLobby = true;
         if(itemObject != null)
         {
@@ -207,11 +297,29 @@ public class GameManager : MonoBehaviour
             item.ClearGetItemPlayer();
             Destroy(itemObject);
 
-            playerGetItemTime = new List<float>(4);
+            playerGetItemTime = new SyncList<float>();
         }
     }
 
     public void SetPlayerGetItemTime(int playerID, float time)
+    {
+        if(hasAuthority)
+        {
+            CmdSetPlayerGetItemTime(playerID, time);   
+        }
+        else
+        {
+            ApplySetPlayerGetItemTime(playerID, time);
+        }
+    }
+
+    [Command]
+    private void CmdSetPlayerGetItemTime(int playerID, float time)
+    {
+        ApplySetPlayerGetItemTime(playerID, time);   
+    }
+
+    private void ApplySetPlayerGetItemTime(int playerID, float time)
     {
         playerGetItemTime[playerID - 1] = time;
     }

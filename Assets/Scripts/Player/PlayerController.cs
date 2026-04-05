@@ -1,14 +1,14 @@
-using System.Linq;
-using JetBrains.Annotations;
 using Mirror;
-using Unity.VisualScripting;
+using Mirror.Examples.Basic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
+    #region Var
     [Header("Player Status")]
-    [SerializeField] private float speed = 10f;
+    [SerializeField] private float gamePadDeadZone;
+    [SerializeField] private float speed;
     // private float jumpForce = 3f;
     private Vector2 moveInput = Vector2.zero;
     private Rigidbody rb;
@@ -16,7 +16,7 @@ public class PlayerController : NetworkBehaviour
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
-    public int playerID { get; private set;}
+    [SyncVar] private int playerID;
     public GameObject itemObject;
     private float getItemTime;
 
@@ -39,6 +39,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private bool canSkill02;
     [SerializeField] private float skill02CDMaxTime;
     private float skill02CDTimer;
+    #endregion
 
     private void Awake()
     {
@@ -63,15 +64,18 @@ public class PlayerController : NetworkBehaviour
             playerInput.enabled = true;
         }
 
-        if (!NetworkClient.active)
-        {
-            playerID = GameManager.Instance.OnNewPlayer(this.gameObject);
-            UIManager.Instance.TogglePlayerIcon(playerID, true);
-            gameObject.name = $"Player {playerID}";
-        }
+        GameManager.Instance.OnNewPlayer(this.gameObject);
+        LevelUIManager.Instance.TogglePlayerIcon(playerID, true);
+        gameObject.name = $"Player {playerID}";
     }
 
-    public void Initialized()
+    [ClientRpc]
+    public void RpcInitialized()
+    {
+        Initialized();
+    }
+
+    private void Initialized()
     {
         isPushed = false;
         skill01Timer = skill01MaxTime;
@@ -83,6 +87,16 @@ public class PlayerController : NetworkBehaviour
         getItemTime = 0;
     }
 
+    public void SetPlayerID(int id)
+    {
+        playerID = id;
+    }
+
+    public int GetPlayerID()
+    {
+        return playerID;   
+    }
+
     // 當玩家換手把、或是從鍵盤改用手把時，這個會自動執行
     public void OnControlsChanged(PlayerInput input)
     {
@@ -92,7 +106,7 @@ public class PlayerController : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+        if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
         if (isLocalPlayer && NetworkClient.active)
         {
@@ -103,6 +117,8 @@ public class PlayerController : NetworkBehaviour
             PlayerMovement();
         }
         // Debug.Log($"Player{netId} Using: {currentPlayerDevice}");
+
+        GetItemTime();
     }
 
     private void PlayerMovement()
@@ -164,11 +180,14 @@ public class PlayerController : NetworkBehaviour
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
         }
+    }
 
-        if(itemObject != null)
+    private void GetItemTime()
+    {
+        if (GameManager.Instance.GetHasAuthority() && itemObject != null)
         {
             getItemTime += Time.deltaTime;
-            GameManager.Instance.SetPlayerGetItemTime(playerID, getItemTime);
+            GameManager.Instance.SetPlayerGetItemTime(playerID, getItemTime); 
         }
     }
 
@@ -176,8 +195,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (playerDevice == "Gamepad")
         {
-            // 只有當玩家有推搖桿時才旋轉，否則放開搖桿角色會瞬間轉回預設方向
-            if (input.sqrMagnitude > 0.03f) 
+            // 只有當玩家有推搖桿時才旋轉
+            if (input.sqrMagnitude > gamePadDeadZone) 
             {
                 Vector3 targetDirection = new Vector3(input.x, 0f, input.y);
                 // 使用 Quaternion.LookRotation 算出該方向的旋轉值
@@ -283,7 +302,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnSkill01(InputAction.CallbackContext callbackContext)
     {
-        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+        if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
         if (canSkill01 && !isSkill01 && !isSkill02)
         {
@@ -296,7 +315,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnSkill02(InputAction.CallbackContext callbackContext)
     {
-        if(!GameManager.Instance.isInLobby && !GameManager.Instance.isPlaying && !GameManager.Instance.isPause) return;
+        if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
         if (canSkill02 && !isSkill01 && !isSkill02)
         {
@@ -339,7 +358,7 @@ public class PlayerController : NetworkBehaviour
     {
         if(collision.gameObject.tag == "Floor")
         {
-            isPushed = false;   
+            isPushed = false;
         }
     }
 
@@ -357,10 +376,11 @@ public class PlayerController : NetworkBehaviour
 
     public void OnQuitButton(InputAction.CallbackContext callbackContext)
     {
-        Application.Quit();   
+        Application.Quit();
     }
 
-    public void TPToSpawnPoint(Vector3 position)
+    [ClientRpc]
+    public void RpcTPToSpawnPoint(Vector3 position)
     {
         transform.position = position;   
     }

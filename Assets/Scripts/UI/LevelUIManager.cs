@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class LevelUIManager : MonoBehaviour
 {    
-    public static UIManager Instance { get; private set;}
+    public static LevelUIManager Instance { get; private set;}
 
     [SerializeField] private Text countDownTimer;
     [SerializeField] private Text gameTimer;
     [SerializeField] private List<GameObject> playerIcons;
+    [SerializeField] private GameObject pauseText;
 
     private void Awake()
     {
@@ -48,5 +49,10 @@ public class UIManager : MonoBehaviour
     public void TogglePlayerIcon(int playerID, bool toggle)
     {
         playerIcons[playerID - 1].SetActive(toggle);
+    }
+
+    public void TogglePauseText(bool toggle)
+    {
+        pauseText.SetActive(toggle);   
     }
 }
