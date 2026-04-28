@@ -19,6 +19,23 @@ public class PlayerController : NetworkBehaviour
     [SyncVar] private int playerID;
     public GameObject itemObject;
     private float getItemTime;
+    [SerializeField] private float currentShameMeter;
+    [SerializeField] private float maxShameMeter; 
+    [SerializeField] private float maxShameMeterSegments; 
+
+    [Space(10)]
+    [Header("ATK")]
+    [SerializeField] private bool isATKCharge;
+    [SerializeField] private bool isATK;
+    [SerializeField] private bool canATK;
+    [SerializeField] private BoxCollider ATKHitbox;
+    [SerializeField] private float ATKMaxTime;
+    [SerializeField] private float ATKSpeed;
+    [SerializeField] private float ATKCDMaxTime;
+    [SerializeField] private float ATKForce;
+    [SerializeField] private float ATKForceY;
+    private float ATKCDTimer;
+    [SerializeField] private float ATKTimer;
 
     [Space(10)]
     [Header("Skill01")]
@@ -82,7 +99,12 @@ public class PlayerController : NetworkBehaviour
         isSkill01 = false;
         isSkill02 = false;
         canSkill01 = true;
-        canSkill02 = true;   
+        canSkill02 = true;
+
+        ATKTimer = 0;
+        isATKCharge = false;
+        canATK = true;
+
         rb.linearVelocity = new Vector3(0, 0, 0);
         getItemTime = 0;
     }
@@ -117,8 +139,13 @@ public class PlayerController : NetworkBehaviour
             PlayerMovement();
         }
         // Debug.Log($"Player{netId} Using: {currentPlayerDevice}");
+    }
 
+    private void Update()
+    {
         GetItemTime();
+
+        NotItemTime();
     }
 
     private void PlayerMovement()
@@ -129,7 +156,7 @@ public class PlayerController : NetworkBehaviour
             lookDirection = CalculateMouseLook();
         }
 
-        if(!isSkill01 && !isSkill02)
+        if(!isSkill01 && !isSkill02 && !isATK)
         {
             PlayerMove(moveInput, lookDirection, currentPlayerDevice);
         }
@@ -141,6 +168,24 @@ public class PlayerController : NetworkBehaviour
         {
             Skill02(); 
         }
+        else if(isATK)
+        {
+            ATK(); 
+        }
+
+        //ATK
+        if (!canATK && !isATK && !isATKCharge)
+        {
+            if(ATKCDTimer < 0)
+            {
+                canATK = true;
+            }
+            else
+            {
+                ATKCDTimer -= Time.fixedDeltaTime;   
+            }
+        }
+        ATKCharge();
 
         //Skill CD
         if (!canSkill01 && !isSkill01)
@@ -151,7 +196,7 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                skill01CDTimer -= Time.deltaTime;   
+                skill01CDTimer -= Time.fixedDeltaTime;   
             }
         }
         if (!canSkill02 && !isSkill02)
@@ -162,7 +207,7 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                skill02CDTimer -= Time.deltaTime;   
+                skill02CDTimer -= Time.fixedDeltaTime;   
             }
         }
 
@@ -188,6 +233,18 @@ public class PlayerController : NetworkBehaviour
         {
             getItemTime += Time.deltaTime;
             GameManager.Instance.SetPlayerGetItemTime(playerID, getItemTime); 
+        }
+    }
+
+    private void NotItemTime()
+    {
+        if (GameManager.Instance.GetHasAuthority() && itemObject == null && currentShameMeter < maxShameMeter)
+        {
+            currentShameMeter += Time.deltaTime;
+        }
+        else
+        {
+            currentShameMeter = maxShameMeter;
         }
     }
 
@@ -275,13 +332,41 @@ public class PlayerController : NetworkBehaviour
         if(skill01Timer > 0)
         {
             rb.linearVelocity = transform.forward * skill01Speed;
-            skill01Timer -= Time.deltaTime;
+            skill01Timer -= Time.fixedDeltaTime;
         }
         else
         {
             isSkill01 = false;
             skill01CDTimer = skill01CDMaxTime;
             skill01Timer = skill01MaxTime;
+            ToggleHitBox(1, false);
+        }
+    }
+
+    private void ATKCharge()
+    {
+        if(ATKTimer <= ATKMaxTime && isATKCharge)
+        {
+            ATKTimer += Time.fixedDeltaTime;
+        }
+        else if (isATKCharge)
+        {
+            ATKTimer = ATKMaxTime;
+        }
+    }
+
+    private void ATK()
+    {
+        if(ATKTimer > 0)
+        {
+            rb.linearVelocity = transform.forward * ATKSpeed;
+            ATKTimer -= Time.fixedDeltaTime;
+        }
+        else
+        {
+            isATK = false;
+            ATKCDTimer = ATKCDMaxTime;
+            ATKTimer = 0;
             ToggleHitBox(1, false);
         }
     }
@@ -300,17 +385,53 @@ public class PlayerController : NetworkBehaviour
         moveInput = callbackContext.ReadValue<Vector2>();
     }
 
-    public void OnSkill01(InputAction.CallbackContext callbackContext)
+    public void OnATK(InputAction.CallbackContext callbackContext)
     {
         if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
-        if (canSkill01 && !isSkill01 && !isSkill02)
+        if (callbackContext.started && canATK && !isATKCharge)
         {
-            isSkill01 = true;
-            canSkill01 = false;
+            isATKCharge = true;
+            Debug.Log("OMG is ATK :O");
+        }
+
+        if(callbackContext.canceled && isATKCharge)
+        {
+            isATKCharge = false;
+            isATK = true;
+            canATK = false;
             ToggleHitBox(1, true);
-            Debug.Log("OMG is Skill01 :O");
-        }   
+        }
+    }
+
+    public void OnSkill01(InputAction.CallbackContext callbackContext)
+    {
+        // if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
+
+        // if (canSkill01 && !isSkill01 && !isSkill02)
+        // {
+        //     isSkill01 = true;
+        //     canSkill01 = false;
+        //     ToggleHitBox(1, true);
+        //     Debug.Log("OMG is Skill01 :O");
+        // }
+
+        if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
+
+        if (callbackContext.started && canATK && !isATKCharge)
+        {
+            isATKCharge = true;
+            Debug.Log("OMG is ChargeATK :O");
+        }
+
+        if(callbackContext.canceled && isATKCharge)
+        {
+            isATKCharge = false;
+            isATK = true;
+            canATK = false;
+            ToggleHitBox(1, true);
+            Debug.Log("OMG is ATK :O");
+        }
     }
 
     public void OnSkill02(InputAction.CallbackContext callbackContext)

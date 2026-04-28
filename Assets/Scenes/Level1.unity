@@ -936,7 +936,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &894019704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1293,6 +1293,10 @@ PrefabInstance:
     - target: {fileID: 5478068305894809478, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: m_Name
       value: Manager
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495109511792949597, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7364383398299374884, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: spawnPrefabs.Array.size
