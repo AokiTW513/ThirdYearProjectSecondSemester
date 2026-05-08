@@ -1,6 +1,9 @@
+using kcp2k;
 using Mirror;
 using Mirror.Examples.Basic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
@@ -12,6 +15,7 @@ public class PlayerController : NetworkBehaviour
     // private float jumpForce = 3f;
     private Vector2 moveInput = Vector2.zero;
     private Rigidbody rb;
+    private Animator animator;
     private PlayerInput playerInput;
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
@@ -56,11 +60,21 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private bool canSkill02;
     [SerializeField] private float skill02CDMaxTime;
     private float skill02CDTimer;
+
+    [Space(10)]
+    [Header("Parry")]
+    [SerializeField] private bool isParry;
+    [SerializeField] private bool canParry;
+    [SerializeField] private float parryCDMaxTime;
+    private float parryCDTimer;
+    private float parryTimer;
+    [SerializeField] private float parryMaxTimer;
     #endregion
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>();
         playerInput = GetComponent<PlayerInput>();
         currentPlayerDevice = playerInput.currentControlScheme;
         Debug.Log($"Using: {currentPlayerDevice}");
@@ -104,6 +118,10 @@ public class PlayerController : NetworkBehaviour
         ATKTimer = 0;
         isATKCharge = false;
         canATK = true;
+
+        isParry = false;
+        canParry = true;
+        parryTimer = parryMaxTimer;
 
         rb.linearVelocity = new Vector3(0, 0, 0);
         getItemTime = 0;
@@ -156,7 +174,7 @@ public class PlayerController : NetworkBehaviour
             lookDirection = CalculateMouseLook();
         }
 
-        if(!isSkill01 && !isSkill02 && !isATK)
+        if(!isSkill01 && !isSkill02 && !isATK && !isParry)
         {
             PlayerMove(moveInput, lookDirection, currentPlayerDevice);
         }
@@ -172,6 +190,18 @@ public class PlayerController : NetworkBehaviour
         {
             ATK(); 
         }
+        else if(isParry)
+        {
+            if(parryTimer > 0)
+            {
+                parryTimer -= Time.deltaTime;
+            }
+            else
+            {
+                isParry = false;
+                parryTimer = parryMaxTimer;
+            }
+        }
 
         //ATK
         if (!canATK && !isATK && !isATKCharge)
@@ -186,6 +216,19 @@ public class PlayerController : NetworkBehaviour
             }
         }
         ATKCharge();
+
+        //Parry
+        if (!isParry && !canParry)
+        {
+            if(parryCDTimer < 0)
+            {
+                canParry = true; 
+            }
+            else
+            {
+                parryCDTimer -= Time.fixedDeltaTime;
+            }
+        }
 
         //Skill CD
         if (!canSkill01 && !isSkill01)
@@ -224,6 +267,7 @@ public class PlayerController : NetworkBehaviour
             int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
             isPushed = false;   
+            animator.SetBool("IsHit", false);
         }
     }
 
@@ -278,6 +322,19 @@ public class PlayerController : NetworkBehaviour
             rb.linearVelocity = new Vector3(moveDir.x * speed, rb.linearVelocity.y, moveDir.z * speed);
             // Debug.Log( rb.linearVelocity.y);
             // Debug.Log($"Player{netId}'s MoveDir:{moveDir}, Using: {playerDevice}, lookDirection: {lookDirection}");
+
+            if(moveDir != Vector3.zero)
+            {
+                animator.SetBool("IsRunning", true);
+            }
+            else
+            {
+                animator.SetBool("IsRunning", false);
+            }
+        }
+        else
+        {
+            animator.SetBool("IsRunning", false);
         }
     }
 
@@ -368,6 +425,7 @@ public class PlayerController : NetworkBehaviour
             ATKCDTimer = ATKCDMaxTime;
             ATKTimer = 0;
             ToggleHitBox(1, false);
+            animator.SetBool("IsATK", false);
         }
     }
 
@@ -430,19 +488,40 @@ public class PlayerController : NetworkBehaviour
             isATK = true;
             canATK = false;
             ToggleHitBox(1, true);
+            animator.SetBool("IsATK", true);
             Debug.Log("OMG is ATK :O");
         }
     }
 
     public void OnSkill02(InputAction.CallbackContext callbackContext)
     {
+        // if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
+
+        // if (canSkill02 && !isSkill01 && !isSkill02)
+        // {
+        //     isSkill02 = true;
+        //     canSkill02 = false;
+        // }
+
         if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
-        if (canSkill02 && !isSkill01 && !isSkill02)
+        if(!isParry && canParry)
         {
-            isSkill02 = true;
-            canSkill02 = false;
-        }   
+            isParry = true;
+            canParry = false;
+            Debug.Log("wow is parry");  
+        }
+    }
+
+    public void OnParry(InputAction.CallbackContext callbackContext)
+    {
+        if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
+
+        if(!isParry && canParry)
+        {
+            isParry = true;
+            canParry = false;   
+        }
     }
     #endregion
 
@@ -462,6 +541,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         isPushed = true;
+        animator.SetBool("IsHit", true);
 
         Vector3 horizontalForce = obj.transform.forward * skill01Force;
         Vector3 verticalForce = Vector3.up * skill01ForceY;
@@ -480,6 +560,7 @@ public class PlayerController : NetworkBehaviour
         if(collision.gameObject.tag == "Floor")
         {
             isPushed = false;
+            animator.SetBool("IsHit", false);
         }
     }
 

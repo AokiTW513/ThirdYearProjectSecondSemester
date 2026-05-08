@@ -8,25 +8,25 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance { get; private set;}
 
     private bool hasAuthority;
-    [SyncVar] private int playerCount;
+    [SerializeField] private int playerCount; //IDK
     [SerializeField] private int minPlayer;
     [SerializeField] private int maxGameTime;
-    [SyncVar] private float currentGameTime;
+    [SerializeField] private float currentGameTime;
     [SerializeField] private int maxCountTime;
-    [SyncVar] private int currentCountTime;
+    [SerializeField] private int currentCountTime;
     [SerializeField] private int maxShowWinnerTime;
     [SerializeField] private List<GameObject> playerSpawnPoints;
     public GameObject itemSpawnPoint;
     [SerializeField] private GameObject itemPrefab;
-    [SyncVar] private bool isPause;
-    [SyncVar] private bool isCounting;
-    [SyncVar] private bool isPlaying;
-    [SyncVar] private bool isInLobby;
-    private SyncList<GameObject> players = new SyncList<GameObject>();
+    [SerializeField] private bool isPause;
+    [SerializeField] private bool isCounting;
+    [SerializeField] private bool isPlaying;
+    [SerializeField] private bool isInLobby;
+    private List<GameObject> players = new List<GameObject>();
     public List<int> winPlayerID = new List<int>();
     private Coroutine disableCoroutine;
     private GameObject itemObject;
-    public SyncList<float> playerGetItemTime = new SyncList<float>();
+    public List<float> playerGetItemTime = new List<float>();
 
     private void Awake()
     {
@@ -53,7 +53,7 @@ public class GameManager : NetworkBehaviour
         else
         {
             hasAuthority = true;   
-        }   
+        }
     }
 
     private void Update()
@@ -297,7 +297,7 @@ public class GameManager : NetworkBehaviour
             item.ClearGetItemPlayer();
             Destroy(itemObject);
 
-            playerGetItemTime = new SyncList<float>();
+            playerGetItemTime = new List<float>();
         }
     }
 
