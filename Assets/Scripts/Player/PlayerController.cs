@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class PlayerController : NetworkBehaviour
+public class PlayerController : MonoBehaviour
 {
     #region Var
     [Header("Player Status")]
@@ -20,7 +20,7 @@ public class PlayerController : NetworkBehaviour
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
-    [SyncVar] private int playerID;
+    private int playerID;
     public GameObject itemObject;
     private float getItemTime;
     [SerializeField] private float currentShameMeter;
@@ -84,29 +84,12 @@ public class PlayerController : NetworkBehaviour
     {
         Initialized();
 
-        if(!isLocalPlayer && NetworkClient.active)
-        {
-            Destroy(playerInput);
-            GetComponent<BoxCollider>().enabled = false;
-            GetComponent<Rigidbody>().isKinematic = true;
-        }
-        else if (isLocalPlayer)
-        {
-            playerInput.enabled = true;
-        }
-
         GameManager.Instance.OnNewPlayer(this.gameObject);
         LevelUIManager.Instance.TogglePlayerIcon(playerID, true);
         gameObject.name = $"Player {playerID}";
     }
 
-    [ClientRpc]
-    public void RpcInitialized()
-    {
-        Initialized();
-    }
-
-    private void Initialized()
+    public void Initialized()
     {
         isPushed = false;
         skill01Timer = skill01MaxTime;
@@ -148,14 +131,7 @@ public class PlayerController : NetworkBehaviour
     {
         if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
-        if (isLocalPlayer && NetworkClient.active)
-        {
-            PlayerMovement();
-        }
-        else if(!NetworkClient.active)
-        {
-            PlayerMovement();
-        }
+        PlayerMovement();
         // Debug.Log($"Player{netId} Using: {currentPlayerDevice}");
     }
 
@@ -273,7 +249,7 @@ public class PlayerController : NetworkBehaviour
 
     private void GetItemTime()
     {
-        if (GameManager.Instance.GetHasAuthority() && itemObject != null)
+        if (itemObject != null)
         {
             getItemTime += Time.deltaTime;
             GameManager.Instance.SetPlayerGetItemTime(playerID, getItemTime); 
@@ -282,7 +258,7 @@ public class PlayerController : NetworkBehaviour
 
     private void NotItemTime()
     {
-        if (GameManager.Instance.GetHasAuthority() && itemObject == null && currentShameMeter < maxShameMeter)
+        if (itemObject == null && currentShameMeter < maxShameMeter)
         {
             currentShameMeter += Time.deltaTime;
         }
@@ -351,25 +327,6 @@ public class PlayerController : NetworkBehaviour
 
     #region Skill
     private void ToggleHitBox(int skillNumber, bool toggle)
-    {
-        if (NetworkClient.active)
-        {
-            CmdToggleHitBox(skillNumber, toggle);       
-        }
-        else
-        {
-            StartToggleHitBox(skillNumber, toggle);
-        }
-    }
-
-    [Command]
-    private void CmdToggleHitBox(int skillNumber, bool toggle)
-    {
-        RpcToggleHitBox(skillNumber, toggle);
-    }
-
-    [ClientRpc]
-    private void RpcToggleHitBox(int skillNumber, bool toggle)
     {
         StartToggleHitBox(skillNumber, toggle);
     }
@@ -532,6 +489,12 @@ public class PlayerController : NetworkBehaviour
 
     public void StartPush(GameObject obj)
     {
+        if (isParry)
+        {
+            
+            return;
+        }
+
         if (isSkill01)
         {
             isSkill01 = false;
@@ -581,8 +544,7 @@ public class PlayerController : NetworkBehaviour
         Application.Quit();
     }
 
-    [ClientRpc]
-    public void RpcTPToSpawnPoint(Vector3 position)
+    public void TPToSpawnPoint(Vector3 position)
     {
         transform.position = position;   
     }

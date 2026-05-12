@@ -90,7 +90,6 @@ GameObject:
   - component: {fileID: 3120308404916038021}
   - component: {fileID: 3721302089180800964}
   - component: {fileID: 5602079865275463748}
-  - component: {fileID: 5676070896539997495}
   m_Layer: 0
   m_Name: Item
   m_TagString: Item
@@ -218,20 +217,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5676070896539997495
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9084693982612996033}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
-  sceneId: 0
-  _assetId: 2439593630
-  serverOnly: 0
-  visibility: 0
-  hasSpawned: 0

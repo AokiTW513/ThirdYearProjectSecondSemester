@@ -2,21 +2,19 @@ using Mirror;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Item : NetworkBehaviour
+public class Item : MonoBehaviour
 {
-    [SyncVar] public GameObject nowGetItemPlayer;
+    public GameObject nowGetItemPlayer;
     private Rigidbody rb;
     private BoxCollider boxCollider;
     public bool canGet { get; private set;}
-    [SyncVar] private float cannotGetTimer;
+    private float cannotGetTimer;
 
     [SerializeField] private float respawnY;
     [SerializeField] private float maxCannotGetTime;
     [SerializeField] private GameObject itemParent;
     [SerializeField] private float force;
     [SerializeField] private float forceY;
-    [SerializeField] private float syncTime;
-    private float syncTimer;
     private Vector3 targetPosition;
     [SerializeField] private float positionLerpSpeed;
 
@@ -25,12 +23,11 @@ public class Item : NetworkBehaviour
         rb = GetComponentInParent<Rigidbody>();
         boxCollider = GetComponent<BoxCollider>();
         canGet = true;
-        syncTimer = syncTime;
     }
 
     private void Update()
     {
-        if (!canGet && GameManager.Instance.GetHasAuthority())
+        if (!canGet)
         {
             if(cannotGetTimer >= 0)
             {
@@ -44,33 +41,12 @@ public class Item : NetworkBehaviour
         }
 
         //OutRange
-        if(itemParent.transform.position.y < -10 && GameManager.Instance.GetHasAuthority())
+        if(itemParent.transform.position.y < -10)
         {
             int x = Random.Range(-8, 8);
             int z = Random.Range(-8, 8);
             itemParent.transform.position = new Vector3(x, respawnY, z);  
         }
-
-        if (GameManager.Instance.GetHasAuthority() && GameManager.Instance.GetIsPlaying())
-        {
-            if(syncTimer >= 0)
-            {
-                syncTimer -= Time.deltaTime;
-            }
-            else
-            {
-                syncTimer = syncTime;
-                RpcSyncItemPosition(itemParent.transform.position);
-            }
-        }
-
-        itemParent.transform.position = Vector3.Lerp(itemParent.transform.position, targetPosition, Time.deltaTime * positionLerpSpeed);
-    }
-
-    [ClientRpc]
-    private void RpcSyncItemPosition(Vector3 pos)
-    {
-        targetPosition = pos;
     }
 
     public void SetGetItemPlayer(GameObject player)

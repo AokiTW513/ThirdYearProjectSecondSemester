@@ -1,7 +1,7 @@
 using Mirror;
 using UnityEngine;
 
-public class PlayerHitbox : NetworkBehaviour
+public class PlayerHitbox : MonoBehaviour
 {
     private PlayerController playerController;
     [SerializeField] private Transform itemTransform;

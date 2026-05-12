@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : MonoBehaviour
 {    
     public static GameManager Instance { get; private set;}
 
-    private bool hasAuthority;
     [SerializeField] private int playerCount; //IDK
     [SerializeField] private int minPlayer;
     [SerializeField] private int maxGameTime;
@@ -42,18 +41,6 @@ public class GameManager : NetworkBehaviour
         isPause = false;
         isPlaying = false;
         isInLobby = true;
-    }
-
-    private void Start()
-    {
-        if (NetworkClient.active || NetworkServer.active)
-        {
-            hasAuthority = isServer;
-        }
-        else
-        {
-            hasAuthority = true;   
-        }
     }
 
     private void Update()
@@ -93,42 +80,17 @@ public class GameManager : NetworkBehaviour
     {
         return isPlaying;
     }
-
-    public bool GetHasAuthority()
-    {
-        return hasAuthority;
-    }
     #endregion
 
     #region Toggle Var
     public void TogglePause()
     {
-        if (hasAuthority)
-        {
-            ApplyPause();  
-        }
-        else
-        {
-            CmdTogglePause();   
-        }
-    }
-
-    [Command]
-    private void CmdTogglePause()
-    {
         ApplyPause();
     }
-
 
     private void ApplyPause()
     {
         isPause = !isPause;
-        RpcApplyPause();
-    }
-
-    [ClientRpc]
-    private void RpcApplyPause()
-    {
         if (isPause)
         {
             Time.timeScale = 0f;
@@ -144,12 +106,9 @@ public class GameManager : NetworkBehaviour
 
     public void OnNewPlayer(GameObject obj)
     {
-        if (hasAuthority)
-        {
-            playerCount++;
-            players.Add(obj);
-            obj.GetComponent<PlayerController>().SetPlayerID(playerCount);
-        }
+        playerCount++;
+        players.Add(obj);
+        obj.GetComponent<PlayerController>().SetPlayerID(playerCount);
     }
 
     public void StartGame()
@@ -176,11 +135,16 @@ public class GameManager : NetworkBehaviour
                 foreach(GameObject player in players)
                 {
                     PlayerController playerController = player.GetComponent<PlayerController>();
-                    playerController.RpcTPToSpawnPoint(playerSpawnPoints[playerController.GetPlayerID() - 1].transform.position);
-                    playerController.RpcInitialized();
+                    playerController.TPToSpawnPoint(playerSpawnPoints[playerController.GetPlayerID() - 1].transform.position);
+                    playerController.Initialized();
                 }
 
-                RpcStartGame(); 
+                LevelUIManager.Instance.ToggleCountDownTimer(true);
+                if(disableCoroutine != null)
+                {
+                    StopCoroutine(disableCoroutine);
+                }
+                disableCoroutine = StartCoroutine(StartCountDown());
             }
             else
             {
@@ -193,17 +157,6 @@ public class GameManager : NetworkBehaviour
                 disableCoroutine = StartCoroutine(TrunOffWinText());
             }
         }
-   }
-
-   [ClientRpc]
-    private void RpcStartGame()
-    {
-        LevelUIManager.Instance.ToggleCountDownTimer(true);
-        if(disableCoroutine != null)
-        {
-            StopCoroutine(disableCoroutine);
-        }
-        disableCoroutine = StartCoroutine(StartCountDown());
     }
 
     private IEnumerator StartCountDown()
@@ -303,20 +256,7 @@ public class GameManager : NetworkBehaviour
 
     public void SetPlayerGetItemTime(int playerID, float time)
     {
-        if(hasAuthority)
-        {
-            CmdSetPlayerGetItemTime(playerID, time);   
-        }
-        else
-        {
-            ApplySetPlayerGetItemTime(playerID, time);
-        }
-    }
-
-    [Command]
-    private void CmdSetPlayerGetItemTime(int playerID, float time)
-    {
-        ApplySetPlayerGetItemTime(playerID, time);   
+        ApplySetPlayerGetItemTime(playerID, time);
     }
 
     private void ApplySetPlayerGetItemTime(int playerID, float time)
