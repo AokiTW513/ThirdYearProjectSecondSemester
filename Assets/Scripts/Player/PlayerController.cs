@@ -150,7 +150,7 @@ public class PlayerController : MonoBehaviour
             lookDirection = CalculateMouseLook();
         }
 
-        if(!isSkill01 && !isSkill02 && !isATK && !isParry)
+        if(!isSkill01 && !isSkill02 && !isATK && !isParry && !isPushed)
         {
             PlayerMove(moveInput, lookDirection, currentPlayerDevice);
         }
@@ -436,17 +436,20 @@ public class PlayerController : MonoBehaviour
         if (callbackContext.started && canATK && !isATKCharge)
         {
             isATKCharge = true;
+            AudioManager.instance.PlayLoop(FMODEvents.instance.chargeSFX); 
             Debug.Log("OMG is ChargeATK :O");
         }
 
         if(callbackContext.canceled && isATKCharge)
         {
+            AudioManager.instance.StopLoop(); 
             isATKCharge = false;
             isATK = true;
             canATK = false;
             ToggleHitBox(1, true);
             animator.SetBool("IsATK", true);
             Debug.Log("OMG is ATK :O");
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.dashSFX, transform.position); 
         }
     }
 
@@ -491,7 +494,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isParry)
         {
-            
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.parrySFX, transform.position); 
             return;
         }
 

@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 2754425387020874708}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalPosition: {x: 0, y: -3.6, z: 0}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7810421647399964595}
@@ -231,9 +231,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe770cc2b467d444b87261278e1aecfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
   gamePadDeadZone: 0.03
   speed: 10
   itemObject: {fileID: 0}
@@ -506,9 +503,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017e43746537e43749afa09ad7beb0e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHitbox
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
   itemTransform: {fileID: 1859011454731682002}
 --- !u!1 &4410122271910364336
 GameObject:
@@ -546,7 +540,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: -0.99}
+  m_AnchoredPosition: {x: 0, y: -0.98}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1484274600934654405
@@ -570,7 +564,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &3297069167358761706
 MonoBehaviour:

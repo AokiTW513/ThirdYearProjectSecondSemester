@@ -25,6 +25,7 @@ public class AudioManager : MonoBehaviour
     private List<StudioEventEmitter> studioEventEmitters;
     private EventInstance ambienceEventInstance;
     private EventInstance bgmEventInstance;
+    private EventInstance loopSFXInstance;
 
     private void Awake()
     {
@@ -92,6 +93,17 @@ public class AudioManager : MonoBehaviour
     {
         RuntimeManager.PlayOneShot(sound, worldPos);
         Debug.Log("Play One Shot: " + sound);
+    }
+
+    public void PlayLoop(EventReference sound)
+    {
+        loopSFXInstance = RuntimeManager.CreateInstance(sound);
+        loopSFXInstance.start();
+    }
+
+    public void StopLoop()
+    {
+        loopSFXInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
     }
 
     public void InitializedAmbience(EventReference ambienceEventReference)

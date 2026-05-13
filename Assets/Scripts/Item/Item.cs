@@ -55,6 +55,7 @@ public class Item : MonoBehaviour
         rb.isKinematic = true;
         boxCollider.enabled = false;
         Debug.Log($"Player {nowGetItemPlayer.GetComponent<PlayerController>().GetPlayerID()} Get Item!");
+        AudioManager.instance.PlayOneShot(FMODEvents.instance.getItemSFX, transform.position); 
     }
 
     public void ClearGetItemPlayer()

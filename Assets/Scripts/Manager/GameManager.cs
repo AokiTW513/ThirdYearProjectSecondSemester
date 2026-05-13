@@ -123,7 +123,6 @@ public class GameManager : MonoBehaviour
                 currentCountTime = maxCountTime;
 
                 itemObject = Instantiate(itemPrefab, itemSpawnPoint.transform.position, itemSpawnPoint.transform.rotation);
-                NetworkServer.Spawn(itemObject);
 
                 playerGetItemTime.Clear();
                 for(int i = 0; i < playerCount; i++)
@@ -145,6 +144,7 @@ public class GameManager : MonoBehaviour
                     StopCoroutine(disableCoroutine);
                 }
                 disableCoroutine = StartCoroutine(StartCountDown());
+                AudioManager.instance.PlayOneShot(FMODEvents.instance.countDownSFX, transform.position); 
             }
             else
             {

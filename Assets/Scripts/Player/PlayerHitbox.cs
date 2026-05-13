@@ -16,6 +16,7 @@ public class PlayerHitbox : MonoBehaviour
         if(other.gameObject.tag == "Skill01")
         {
             playerController.Push(other.gameObject);
+            AudioManager.instance.PlayOneShot(FMODEvents.instance.hitSFX, transform.position); 
             Debug.Log("IDK");
         }
 
