@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{4790f2fe-3a61-41ef-8a87-55f01ccca7df}">
+		<property name="assetPath">
+			<value>SFX/打擊音效.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.16204081632653061</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{3d885bd5-17cb-4691-80a3-e879d8cce8c8}</destination>
+		</relationship>
+	</object>
+</objects>

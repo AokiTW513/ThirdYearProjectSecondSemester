@@ -2411,9 +2411,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8760684382775690810, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1705003044}
-    - targetCorrespondingSourceObject: {fileID: 8760684382775690810, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1684092335}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
 --- !u!4 &1343617663 stripped
@@ -2620,6 +2617,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1684092335}
+  - component: {fileID: 1684092336}
   m_Layer: 0
   m_Name: FMODEvents
   m_TagString: Untagged
@@ -2635,13 +2633,74 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684092334}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1343617663}
+  m_Father: {fileID: 1705003044}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1684092336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684092334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80e27d90d814b4843810f80bea2cc5dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FMODEvents
+  <hitSFX>k__BackingField:
+    Guid:
+      Data1: 181184469
+      Data2: 1330584493
+      Data3: 1149424825
+      Data4: -1959623602
+    Path: event:/SFX/Hit
+  <parrySFX>k__BackingField:
+    Guid:
+      Data1: -1860253431
+      Data2: 1177126068
+      Data3: 170644114
+      Data4: -1939941443
+    Path: event:/SFX/Parry
+  <chargeSFX>k__BackingField:
+    Guid:
+      Data1: -850812870
+      Data2: 1321611461
+      Data3: -1383391564
+      Data4: 617832879
+    Path: event:/SFX/Charge
+  <dashSFX>k__BackingField:
+    Guid:
+      Data1: -1214336087
+      Data2: 1194141705
+      Data3: -1198315362
+      Data4: -1622238206
+    Path: event:/SFX/Dash
+  <getItemSFX>k__BackingField:
+    Guid:
+      Data1: -2094347163
+      Data2: 1328594208
+      Data3: 497948602
+      Data4: -1650416389
+    Path: event:/SFX/PickUpItem
+  <countDownSFX>k__BackingField:
+    Guid:
+      Data1: 341168411
+      Data2: 1150652173
+      Data3: -2015543145
+      Data4: 524350377
+    Path: event:/SFX/CountDown
+  <BGM>k__BackingField:
+    Guid:
+      Data1: 2004362957
+      Data2: 1251045664
+      Data3: -281646459
+      Data4: -1909377520
+    Path: event:/Music/MainBGM
 --- !u!1 &1705003043
 GameObject:
   m_ObjectHideFlags: 0
@@ -2651,6 +2710,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1705003044}
+  - component: {fileID: 1705003045}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -2670,9 +2730,25 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1684092335}
   m_Father: {fileID: 1343617663}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1705003045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1705003043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 399bf6868de7b38449acacd9f2f9b6ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  masterVolume: 1
+  bgmVolume: 1
+  sfxVolume: 1
 --- !u!1 &1731730697
 GameObject:
   m_ObjectHideFlags: 0
