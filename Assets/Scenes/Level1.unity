@@ -1250,8 +1250,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 749867857}
   - {fileID: 1219159063}
+  - {fileID: 749867857}
   - {fileID: 641445638}
   - {fileID: 176813300}
   - {fileID: 723565181}
@@ -2352,6 +2352,10 @@ PrefabInstance:
     - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: minPlayer
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
+      propertyPath: maxGameTime
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: itemSpawnPoint
