@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,9 +8,12 @@ public class LevelUIManager : MonoBehaviour
     public static LevelUIManager Instance { get; private set;}
 
     [SerializeField] private Text countDownTimer;
-    [SerializeField] private Text gameTimer;
+    // [SerializeField] private Text gameTimer;
     [SerializeField] private List<GameObject> playerIcons;
     [SerializeField] private GameObject pauseText;
+    [SerializeField] private List<Sprite> timerSprites;
+    [SerializeField] private GameObject gameTimerUI;
+    [SerializeField] private List<Image> timerImages;
 
     private void Awake()
     {
@@ -23,7 +27,7 @@ public class LevelUIManager : MonoBehaviour
         }
 
         ToggleCountDownTimer(false);
-        ToggleGameTimer(false);
+        ToggleGameTimerUI(false);
     }
 
     public void ToggleCountDownTimer(bool toggle)
@@ -36,14 +40,18 @@ public class LevelUIManager : MonoBehaviour
         countDownTimer.text = text;   
     }
 
-    public void ToggleGameTimer(bool toggle)
+    public void ToggleGameTimerUI(bool toggle)
     {
-        gameTimer.gameObject.SetActive(toggle);
+        gameTimerUI.gameObject.SetActive(toggle);
     }
 
-    public void ChangeGameTimer(float sec)
+    public void ChangeGameTimer(int sec)
     {
-        gameTimer.text = Mathf.FloorToInt(sec / 60).ToString("00") + ":" + (sec % 60).ToString("00");   
+        string timerString = sec.ToString("D3");
+
+        timerImages[0].sprite = timerSprites[int.Parse(timerString[0].ToString())];
+        timerImages[1].sprite = timerSprites[int.Parse(timerString[1].ToString())];
+        timerImages[2].sprite = timerSprites[int.Parse(timerString[2].ToString())];
     }
 
     public void TogglePlayerIcon(int playerID, bool toggle)

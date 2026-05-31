@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private int playerID;
     public GameObject itemObject;
     private float getItemTime;
+    [SerializeField] private Transform characterPrefabTransform;
     [SerializeField] private float currentShameMeter;
     [SerializeField] private float maxShameMeter; 
     [SerializeField] private float maxShameMeterSegments; 
@@ -74,7 +75,6 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        animator = GetComponentInChildren<Animator>();
         playerInput = GetComponent<PlayerInput>();
         currentPlayerDevice = playerInput.currentControlScheme;
         Debug.Log($"Using: {currentPlayerDevice}");
@@ -87,6 +87,10 @@ public class PlayerController : MonoBehaviour
         GameManager.Instance.OnNewPlayer(this.gameObject);
         LevelUIManager.Instance.TogglePlayerIcon(playerID, true);
         gameObject.name = $"Player {playerID}";
+
+        GameObject character = Instantiate(GameManager.Instance.characterPrefabs[playerID - 1], characterPrefabTransform, false);
+        character.transform.localPosition = new Vector3(0, -1, 0);
+        animator = character.GetComponentInChildren<Animator>();
     }
 
     public void Initialized()

@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     private Coroutine disableCoroutine;
     private GameObject itemObject;
     public List<float> playerGetItemTime = new List<float>();
+    public List<GameObject> characterPrefabs;
 
     private void Awake()
     {
@@ -50,7 +51,7 @@ public class GameManager : MonoBehaviour
             if(currentGameTime >= 0)
             {
                 currentGameTime -= Time.deltaTime;
-                LevelUIManager.Instance.ChangeGameTimer(currentGameTime);
+                LevelUIManager.Instance.ChangeGameTimer((int)currentGameTime);
             }
             else
             {
@@ -177,7 +178,7 @@ public class GameManager : MonoBehaviour
                 LevelUIManager.Instance.ChangeCountDownTimer("Fight!!!");
                 isCounting = false;
                 isPlaying = true;
-                LevelUIManager.Instance.ToggleGameTimer(true);
+                LevelUIManager.Instance.ToggleGameTimerUI(true);
                 currentCountTime -= 1;
                 yield return new WaitForSeconds(1);
                 disableCoroutine = StartCoroutine(StartCountDown());
@@ -194,7 +195,7 @@ public class GameManager : MonoBehaviour
     private void GameOver()
     {
         isPlaying = false;
-        LevelUIManager.Instance.ToggleGameTimer(false);
+        LevelUIManager.Instance.ToggleGameTimerUI(false);
 
         // winPlayerID = itemObject.GetComponentInChildren<Item>().GetWinPlayerID();
 

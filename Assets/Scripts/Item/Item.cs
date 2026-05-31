@@ -61,6 +61,7 @@ public class Item : MonoBehaviour
     public void ClearGetItemPlayer()
     {
         itemParent.transform.SetParent(GameManager.Instance.itemSpawnPoint.transform, true);
+        itemParent.transform.localScale = new Vector3(1f, 1f, 1f);
         nowGetItemPlayer = null;
     }
 
@@ -102,6 +103,7 @@ public class Item : MonoBehaviour
         itemParent.transform.SetParent(transform, false);
         itemParent.transform.localPosition = new Vector3(0, 0, 0);
         itemParent.transform.localRotation = Quaternion.identity;
+        itemParent.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
     }
 
     public GameObject GetItemParent()
