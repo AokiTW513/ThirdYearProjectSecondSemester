@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private string currentPlayerDevice;
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
+    public bool isDizziness;
     private int playerID;
     public GameObject itemObject;
     private float getItemTime;

@@ -22,10 +22,22 @@ public class PlayerHitbox : MonoBehaviour
 
         if(other.gameObject.tag == "Item")
         {
-            Item item = other.gameObject.GetComponent<Item>();
-            item.SetItemParent(itemTransform);
-            item.SetGetItemPlayer(this.gameObject);
-            playerController.itemObject = item.GetItemParent();
+            if(other.gameObject.GetComponent<Item>() != null)
+            {
+                Item item = other.gameObject.GetComponent<Item>();
+                item.SetItemParent(itemTransform);
+                item.SetGetItemPlayer(this.gameObject);
+                playerController.itemObject = item.GetItemParent();
+            }
+            else if(other.gameObject.GetComponent<Item1>() != null)
+            {
+                other.gameObject.GetComponent<Item1>().GetItem();
+            } 
+        }
+
+        if(other.gameObject.tag == "Item2")
+        {
+            Item1 item1 = other.gameObject.GetComponent<Item1>();   
         }
     }
 }

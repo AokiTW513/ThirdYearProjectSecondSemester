@@ -180,6 +180,7 @@ public class GameManager : MonoBehaviour
                 isPlaying = true;
                 LevelUIManager.Instance.ToggleGameTimerUI(true);
                 currentCountTime -= 1;
+                Item1Manager.Instance.StartSpawnItem1();
                 yield return new WaitForSeconds(1);
                 disableCoroutine = StartCoroutine(StartCountDown());
             }
@@ -234,6 +235,8 @@ public class GameManager : MonoBehaviour
         disableCoroutine = StartCoroutine(TrunOffWinText());
 
         winPlayerID.Clear();
+
+        Item1Manager.Instance.StopSpawnItem1();
     }
 
     private IEnumerator TrunOffWinText()
