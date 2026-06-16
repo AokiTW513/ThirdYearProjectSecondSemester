@@ -58,7 +58,7 @@ public class Item1Manager : MonoBehaviour
 
         RespawnItem1();
 
-        StartSpawnItem1();
+        // StartSpawnItem1();
     }
 
     public void StopSpawnItem1()

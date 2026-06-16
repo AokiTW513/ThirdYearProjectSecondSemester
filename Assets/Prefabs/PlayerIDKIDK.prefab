@@ -233,6 +233,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   gamePadDeadZone: 0.03
   speed: 10
+  isDizziness: 0
+  dizzinessMaxTime: 2
+  dizzinessTimer: 0
   itemObject: {fileID: 0}
   characterPrefabTransform: {fileID: 5776609285084670491}
   currentShameMeter: 0

@@ -37,7 +37,17 @@ public class PlayerHitbox : MonoBehaviour
 
         if(other.gameObject.tag == "Item2")
         {
-            Item1 item1 = other.gameObject.GetComponent<Item1>();   
+            Item1 item1 = other.gameObject.GetComponent<Item1>();
+            item1.GetItem();
+        }
+
+        if(other.gameObject.tag == "Sphere")
+        {
+            Sphere sphere = other.gameObject.GetComponent<Sphere>();
+            playerController.isDizziness = true;
+            playerController.dizzinessTimer = playerController.dizzinessMaxTime;
+
+            Item1Manager.Instance.StartSpawnItem1();
         }
     }
 }

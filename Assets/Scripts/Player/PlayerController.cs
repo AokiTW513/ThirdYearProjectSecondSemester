@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     Vector3 lookDirection = Vector3.zero;
     private bool isPushed;
     public bool isDizziness;
+    public float dizzinessMaxTime;
+    public float dizzinessTimer = 0;
     private int playerID;
     public GameObject itemObject;
     private float getItemTime;
@@ -155,7 +157,7 @@ public class PlayerController : MonoBehaviour
             lookDirection = CalculateMouseLook();
         }
 
-        if(!isSkill01 && !isSkill02 && !isATK && !isParry && !isPushed)
+        if(!isSkill01 && !isSkill02 && !isATK && !isParry && !isPushed && !isDizziness)
         {
             PlayerMove(moveInput, lookDirection, currentPlayerDevice);
         }
@@ -182,6 +184,19 @@ public class PlayerController : MonoBehaviour
                 isParry = false;
                 parryTimer = parryMaxTimer;
             }
+        }
+
+        if (isDizziness)
+        {
+            if(dizzinessTimer > 0)
+            {
+                dizzinessTimer -= Time.deltaTime;
+            }
+            else
+            {
+                dizzinessTimer = 0;
+                isDizziness = false;
+            }   
         }
 
         //ATK
@@ -247,7 +262,7 @@ public class PlayerController : MonoBehaviour
             int x = Random.Range(-8, 8);
             int z = Random.Range(-8, 8);
             transform.position = new Vector3(x, 1, z);
-            isPushed = false;   
+            isPushed = false;
             animator.SetBool("IsHit", false);
         }
     }
@@ -513,6 +528,8 @@ public class PlayerController : MonoBehaviour
 
         isPushed = true;
         animator.SetBool("IsHit", true);
+
+        isDizziness = false;
 
         Vector3 horizontalForce = obj.transform.forward * skill01Force;
         Vector3 verticalForce = Vector3.up * skill01ForceY;
