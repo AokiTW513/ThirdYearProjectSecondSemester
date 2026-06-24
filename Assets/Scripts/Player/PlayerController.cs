@@ -485,12 +485,13 @@ public class PlayerController : MonoBehaviour
 
         if(!GameManager.Instance.GetIsInLobby() && !GameManager.Instance.GetIsPlaying() && !GameManager.Instance.GetIsPause()) return;
 
-        if(!isParry && canParry)
-        {
-            isParry = true;
-            canParry = false;
-            Debug.Log("wow is parry");  
-        }
+        //Parry Delete
+        // if(!isParry && canParry)
+        // {
+        //     isParry = true;
+        //     canParry = false;
+        //     Debug.Log("wow is parry");  
+        // }
     }
 
     public void OnParry(InputAction.CallbackContext callbackContext)

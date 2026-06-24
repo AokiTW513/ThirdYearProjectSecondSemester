@@ -2440,7 +2440,7 @@ PrefabInstance:
       objectReference: {fileID: 1196583914}
     - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: characterPrefabs.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: 'characterPrefabs.Array.data[0]'
@@ -2454,6 +2454,10 @@ PrefabInstance:
       propertyPath: 'characterPrefabs.Array.data[2]'
       value: 
       objectReference: {fileID: 4020692817506212942, guid: 8927854714fa94d8db3fe191dd4f3fb6, type: 3}
+    - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
+      propertyPath: 'characterPrefabs.Array.data[3]'
+      value: 
+      objectReference: {fileID: 694530471659335204, guid: b20b37301e669234086cd0291f0570d7, type: 3}
     - target: {fileID: 4616777479349086847, guid: 3317d64f31a8e427b999d67cb65757a8, type: 3}
       propertyPath: 'playerSpawnPoints.Array.data[0]'
       value: 
